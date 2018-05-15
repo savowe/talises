@@ -154,9 +154,12 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
   {
     Amp[0] = m_params->Get_VConstant("Amp_1",0);
     Amp[1] = m_params->Get_VConstant("Amp_1",1);
-    laser_k[0] = m_params->Get_Constant("laser_k");
+    laser_k[0] = m_params->Get_VConstant("laser_k", 0);
+    laser_k[1] = m_params->Get_VConstant("laser_k", 1);
+    laser_domh[0] = m_params->Get_VConstant("laser_domh",0);
+    laser_domh[1] = m_params->Get_VConstant("laser_domh",1);
     laser_dk[0] = m_params->Get_Constant("laser_dk");
-    laser_domh[0] = m_params->Get_Constant("laser_domh");
+
     m_rabi_threshold = m_params->Get_Constant("rabi_threshold");
     chirp = m_params->Get_Constant("chirp");
   }
@@ -540,6 +543,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
   #pragma omp parallel
   {
     const double dt = -m_header.dt;
+    const double t1 = this->Get_t();
 
     vector<fftw_complex *> Psi;
     for ( int i=0; i<no_int_states; i++ )
@@ -581,16 +585,16 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       //---------------------------------------------
 
       //Raman
-      sincos((laser_k[0]*x[0]), &im1, &re1 );
+      //sincos((laser_k[0]*x[0]), &im1, &re1 );
 
-      eta[0] = Amp[0]/2*re1;
-      eta[1] = Amp[0]/2*im1;
+      eta[0] = Amp[0]*cos(laser_k[0]*x[0]) + Amp[1]*cos(laser_k[1]*x[0]+laser_domh[0]*t1);
+      eta[1] = 0;
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
-      eta[0] = Amp[1]/2*re1;
-      eta[1] = Amp[1]/2*im1;
+      eta[0] = Amp[0]*cos(laser_k[0]*x[0]-laser_domh[0]*t1) + Amp[1]*cos(laser_k[1]*x[0]+laser_domh[0]*t1)*cos(-laser_domh[0]*t1);
+      eta[1] = Amp[1]*cos(laser_k[1]*x[0]+laser_domh[0]*t1)*sin(-laser_domh[0]*t1);
 
       gsl_matrix_complex_set(A,1,2, {eta[0],-eta[1]});
       gsl_matrix_complex_set(A,2,1, {eta[0],eta[1]});
