@@ -158,7 +158,7 @@ CRT_Base<T,dim,no_int_states>::CRT_Base( ParameterHandler *params )
 
   string tmpstr;
 
-  //Read gs from xml
+  //Read b from xml
   m_b = m_params->Get_Constant("b");
 
   //Read alpha from xml

@@ -90,7 +90,7 @@ int main( int argc, char *argv[] )
     cout << "Errc:     " << e.GetCode() << "\n";
   }
 
-  int no_of_threads = 4;
+  int no_of_threads = 8;
   char *envstr = getenv( "MY_NO_OF_THREADS" );
   if ( envstr != nullptr ) no_of_threads = atoi( envstr );
 

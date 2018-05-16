@@ -69,7 +69,6 @@ protected:
   std::array<double,2> Amp,  ///< Amplitude of the light fields \f$ \mu E\f$ */
       laser_k, ///< Wave vector of the laser fields
       laser_dk, ///< Difference between wave vectors
-      laser_domh, ///< Difference between the frequencies of the laser fields
       phase, ///< Additional phase (for example phase errors)
       chirp_rate; ///< Chirp rate of the frequency of the laser fields
 
@@ -93,6 +92,9 @@ protected:
 
   /// Area around momentum states
   double m_rabi_threshold;
+
+  ///< Difference between the frequencies of the laser fields
+  double laser_domh;
 
   /** Contains the position of the momentum states in momentum space */
   vector<CPoint<dim>> m_rabi_momentum_list;
@@ -156,10 +158,8 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
     Amp[1] = m_params->Get_VConstant("Amp_1",1);
     laser_k[0] = m_params->Get_VConstant("laser_k", 0);
     laser_k[1] = m_params->Get_VConstant("laser_k", 1);
-    laser_domh[0] = m_params->Get_VConstant("laser_domh",0);
-    laser_domh[1] = m_params->Get_VConstant("laser_domh",1);
-    laser_dk[0] = m_params->Get_Constant("laser_dk");
 
+    laser_domh = m_params->Get_Constant("laser_domh");
     m_rabi_threshold = m_params->Get_Constant("rabi_threshold");
     chirp = m_params->Get_Constant("chirp");
   }
@@ -480,7 +480,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Bragg()
 
       for ( int i=0; i<no_int_states-1; i++ )
       {
-        sincos(((-laser_domh[0]+chirp_rate[i]*t1)*t1+laser_k[i]*x[0]-0.5*phase[0]), &im1, &re1 );
+        sincos(((-laser_domh+chirp_rate[i]*t1)*t1+laser_k[i]*x[0]-0.5*phase[0]), &im1, &re1 );
 
         eta[0] = Amp[0]*re1/2+Amp[1]*re1/2;
         eta[1] = Amp[0]*im1/2-Amp[1]*im1/2;
@@ -587,14 +587,14 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       //Raman
       //sincos((laser_k[0]*x[0]), &im1, &re1 );
 
-      eta[0] = Amp[0]*cos(laser_k[0]*x[0]) + Amp[1]*cos(laser_k[1]*x[0]+laser_domh[0]*t1);
+      eta[0] = Amp[0]*cos(laser_k[0]*x[0]) + Amp[1]*cos(laser_k[1]*x[0]+laser_domh*t1);
       eta[1] = 0;
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
-      eta[0] = Amp[0]*cos(laser_k[0]*x[0]-laser_domh[0]*t1) + Amp[1]*cos(laser_k[1]*x[0]+laser_domh[0]*t1)*cos(-laser_domh[0]*t1);
-      eta[1] = Amp[1]*cos(laser_k[1]*x[0]+laser_domh[0]*t1)*sin(-laser_domh[0]*t1);
+      eta[0] = Amp[0]*cos(laser_k[0]*x[0]-laser_domh*t1) + Amp[1]*cos(laser_k[1]*x[0]+laser_domh*t1)*cos(-laser_domh*t1);
+      eta[1] = Amp[1]*cos(laser_k[1]*x[0]+laser_domh*t1)*sin(-laser_domh*t1);
 
       gsl_matrix_complex_set(A,1,2, {eta[0],-eta[1]});
       gsl_matrix_complex_set(A,2,1, {eta[0],eta[1]});
