@@ -578,26 +578,25 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       		phi[i] = this->m_b*log( tmp_density );
       	}
         x = this->m_fields[0]->Get_x(l);
-        phi[i] += beta*x-DeltaL[i];
+        phi[i] += beta*x+DeltaL[i];
         gsl_matrix_complex_set(A,i,i, {phi[i],0});
       }
 
       //---------------------------------------------
 
       //Raman
-      //sincos((laser_k[0]*x[0]), &im1, &re1 );
 
-      eta[0] = Amp[0]*cos(laser_k[0]*x[0]) + Amp[1]*cos(laser_k[1]*x[0]+laser_domh*t1);
+      eta[0] = 2*Amp[0]*cos(laser_k[0]*x[0]);
       eta[1] = 0;
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
-      eta[0] = Amp[0]*cos(laser_k[0]*x[0]-laser_domh*t1) + Amp[1]*cos(laser_k[1]*x[0]+laser_domh*t1)*cos(-laser_domh*t1);
-      eta[1] = Amp[1]*cos(laser_k[1]*x[0]+laser_domh*t1)*sin(-laser_domh*t1);
+      eta[0] = Amp[1]*cos(laser_k[1]*x[0])*(1+cos(-2*laser_domh*t1));
+      eta[1] = Amp[1]*cos(laser_k[1]*x[0])*sin(-2*laser_domh*t1);
 
-      gsl_matrix_complex_set(A,1,2, {eta[0],-eta[1]});
-      gsl_matrix_complex_set(A,2,1, {eta[0],eta[1]});
+      gsl_matrix_complex_set(A,1,2, {eta[0],eta[1]});
+      gsl_matrix_complex_set(A,2,1, {eta[0],-eta[1]});
 
       //--------------------------------------------
 
