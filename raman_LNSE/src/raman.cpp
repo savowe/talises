@@ -26,7 +26,7 @@
  *  |Ω1   V22   Ω2|
  *  |0    Ω2   V33|
  */
-// test comment
+
 #include <iomanip>
 #include <cmath>
 #include <omp.h>
