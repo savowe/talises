@@ -70,7 +70,8 @@ protected:
       laser_k, ///< Wave vector of the laser fields
       laser_dk, ///< Difference between wave vectors
       phase, ///< Additional phase (for example phase errors)
-      chirp_rate; ///< Chirp rate of the frequency of the laser fields
+      chirp_rate, ///< Chirp rate of the frequency of the laser fields
+  	  laser_w; ///< angular frequency of the lasers
 
   double chirp;
   bool amp_is_t;
@@ -93,8 +94,17 @@ protected:
   /// Area around momentum states
   double m_rabi_threshold;
 
-  ///< Difference between the frequencies of the laser fields
-  double laser_domh;
+  /// Difference between the frequencies of the laser fields
+  double laser_domh = laser_w[0]-laser_w[1];
+
+  /// moving velocity
+  double v_0;
+
+  /// constant acceleration
+  double g_0;
+
+  /// phase velocity of light
+  double c_p;
 
   /** Contains the position of the momentum states in momentum space */
   vector<CPoint<dim>> m_rabi_momentum_list;
@@ -154,12 +164,16 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
 
   try
   {
-    Amp[0] = m_params->Get_VConstant("Amp_1",0);
+    Amp[0] = m_params->Get_VConstant("Amp_1",0); //TODO Amplituden sind verwirrend
     Amp[1] = m_params->Get_VConstant("Amp_1",1);
     laser_k[0] = m_params->Get_VConstant("laser_k", 0);
     laser_k[1] = m_params->Get_VConstant("laser_k", 1);
+    laser_w[0] = m_params->Get_VConstant("laser_w", 0);
+    laser_w[1] = m_params->Get_VConstant("laser_w", 1);
 
-    laser_domh = m_params->Get_Constant("laser_domh");
+    v_0 = m_params->Get_Constant("v_0");
+    g_0 = m_params->Get_Constant("g_0");
+    c_p = m_params->Get_Constant("c_p");
     m_rabi_threshold = m_params->Get_Constant("rabi_threshold");
     chirp = m_params->Get_Constant("chirp");
   }
@@ -557,7 +571,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     gsl_vector_complex *Psi_2 = gsl_vector_complex_alloc(no_int_states);
     gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
 
-    double phi[no_int_states],re1,im1,eta[2];
+    double phi[no_int_states],re1,im1,re2,im2,eta[2];
     CPoint<dim> x;
 
     #pragma omp for
@@ -585,15 +599,19 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       //---------------------------------------------
 
       //Raman
+      double doppler_beta = (v_0-g_0*t1)/c_p;
 
-      eta[0] = 2*Amp[0]*cos(laser_k[0]*x[0]);
-      eta[1] = 0;
+      sincos(doppler_beta*laser_k[0]*x[0], &im1, &re1 );
+      eta[0] = Amp[0]*re1*(+cos(laser_k[0]*x[0])+cos(laser_k[0]*x[0]-doppler_beta*laser_w[0]*t1));
+      eta[1] = Amp[0]*im1*(-cos(laser_k[0]*x[0])+cos(laser_k[0]*x[0]-doppler_beta*laser_w[0]*t1));
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
-      eta[0] = Amp[1]*cos(laser_k[1]*x[0])*(1+cos(-2*laser_domh*t1));
-      eta[1] = Amp[1]*cos(laser_k[1]*x[0])*sin(-2*laser_domh*t1);
+      sincos(-doppler_beta*laser_k[1]*x[0]-2*laser_domh*t1, &im1, &re1 );
+      sincos(doppler_beta*laser_k[1]*x[0], &im2, &re2 );
+      eta[0] = Amp[1]*(re1*cos(doppler_beta*laser_domh*t1+laser_k[1]*x[0])+re2*cos(laser_k[1]*x[0]-doppler_beta*laser_w[1]*t1));
+      eta[0] = Amp[1]*(im1*cos(doppler_beta*laser_domh*t1+laser_k[1]*x[0])+im2*cos(laser_k[1]*x[0]-doppler_beta*laser_w[1]*t1));
 
       gsl_matrix_complex_set(A,1,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,1, {eta[0],-eta[1]});
