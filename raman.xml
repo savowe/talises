@@ -1,0 +1,31 @@
+<SIMULATION>
+  <DIM>1</DIM>
+  <FILENAME>0.0000_1.bin</FILENAME>
+  <FILENAME_2>0.0000_2.bin</FILENAME_2>
+  <FILENAME_3>0.0000_3.bin</FILENAME_3>
+  <CONSTANTS>
+    <b>0.000001</b>
+    <v_0>4</v_0>
+    <g_0>9.805</g_0>
+    <c_p>299792458</c_p>    
+    <chirp>0</chirp>
+    <rabi_threshold>4</rabi_threshold>
+  </CONSTANTS>
+  <VCONSTANTS>
+    <Amp_1>-10,-10</Amp_1>
+    <Amp_2>-10,-10</Amp_2>
+    <Alpha_1>0.000365368,0.000365368,0.000365368</Alpha_1>
+    <Delta_L>4398.229715, 4398.229715, 0</Delta_L>
+    <Beta>0,0,0</Beta>
+    <laser_k>8.052945514, 8.052802263</laser_k>
+    <laser_w>2414212330, 2414169384</laser_w>
+  </VCONSTANTS>
+  <ALGORITHM>
+    <NK>25</NK>
+    <NA>700</NA>
+  </ALGORITHM>
+  <SEQUENCE>
+    <raman dt="0.02" Nk="100" output_freq="none" pn_freq="each" rabi_output_freq="none">300</raman>
+    <freeprop dt="0.2" Nk="5000" output_freq="each" pn_freq="last">100000</freeprop>
+  </SEQUENCE>
+</SIMULATION>

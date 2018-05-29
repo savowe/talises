@@ -66,7 +66,8 @@ protected:
   CPoint<dim> beta;
   /// Detuning. Energy difference between lasers and the excited state
   std::array<double,no_int_states> DeltaL;
-  std::array<double,2> Amp,  ///< Amplitude of the light fields \f$ \mu E\f$ */
+  std::array<double,2> Amp_1,  ///< Amplitude of the light fields \f$ \mu E\f$ */
+  	  Amp_2,
       laser_k, ///< Wave vector of the laser fields
       laser_dk, ///< Difference between wave vectors
       phase, ///< Additional phase (for example phase errors)
@@ -164,8 +165,10 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
 
   try
   {
-    Amp[0] = m_params->Get_VConstant("Amp_1",0); //TODO Amplituden sind verwirrend
-    Amp[1] = m_params->Get_VConstant("Amp_1",1);
+    Amp_1[0] = m_params->Get_VConstant("Amp_1",0); //TODO Amplituden sind verwirrend
+    Amp_1[1] = m_params->Get_VConstant("Amp_1",1); // 0 ist nach rechts (positiv) und 1 ist nach links (negativ)
+    Amp_2[0] = m_params->Get_VConstant("Amp_2",0);
+    Amp_2[1] = m_params->Get_VConstant("Amp_2",1);
     laser_k[0] = m_params->Get_VConstant("laser_k", 0);
     laser_k[1] = m_params->Get_VConstant("laser_k", 1);
     laser_w[0] = m_params->Get_VConstant("laser_w", 0);
@@ -496,8 +499,8 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Bragg()
       {
         sincos(((-laser_domh+chirp_rate[i]*t1)*t1+laser_k[i]*x[0]-0.5*phase[0]), &im1, &re1 );
 
-        eta[0] = Amp[0]*re1/2+Amp[1]*re1/2;
-        eta[1] = Amp[0]*im1/2-Amp[1]*im1/2;
+        eta[0] = Amp_1[0]*re1/2+Amp_1[1]*re1/2;
+        eta[1] = Amp_1[0]*im1/2-Amp_1[1]*im1/2;
 
 //      sincos((0.5*laser_dk[0]), &im1, &re1);
 
@@ -571,7 +574,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     gsl_vector_complex *Psi_2 = gsl_vector_complex_alloc(no_int_states);
     gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
 
-    double phi[no_int_states],re1,im1,re2,im2,eta[2];
+    double phi[no_int_states],re1,im1,eta[2];
     CPoint<dim> x;
 
     #pragma omp for
@@ -601,17 +604,14 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       //Raman
       double doppler_beta = (v_0-g_0*t1)/c_p;
 
-      sincos(doppler_beta*laser_k[0]*x[0], &im1, &re1 );
-      eta[0] = Amp[0]*re1*(+cos(laser_k[0]*x[0])+cos(laser_k[0]*x[0]-doppler_beta*laser_w[0]*t1));
-      eta[1] = Amp[0]*im1*(-cos(laser_k[0]*x[0])+cos(laser_k[0]*x[0]-doppler_beta*laser_w[0]*t1));
+      eta[0] = Amp_1[1] * cos((laser_k[0] * x[0] + t1 * laser_w[0]) * doppler_beta + laser_k[0] * x[0]) + Amp_1[0] * cos(x[0] * laser_k[0] * (doppler_beta - 1) - t1 * laser_w[0] * doppler_beta);
+      eta[1] = 0;
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
-      sincos(-doppler_beta*laser_k[1]*x[0]-2*laser_domh*t1, &im1, &re1 );
-      sincos(doppler_beta*laser_k[1]*x[0], &im2, &re2 );
-      eta[0] = Amp[1]*(re1*cos(doppler_beta*laser_domh*t1+laser_k[1]*x[0])+re2*cos(laser_k[1]*x[0]-doppler_beta*laser_w[1]*t1));
-      eta[0] = Amp[1]*(im1*cos(doppler_beta*laser_domh*t1+laser_k[1]*x[0])+im2*cos(laser_k[1]*x[0]-doppler_beta*laser_w[1]*t1));
+      eta[0] = Amp_2[1] * cos((laser_k[1] * x[0] + t1 * laser_w[1]) * doppler_beta + laser_k[1] * x[0]) + Amp_2[0] * cos(x[0] * laser_k[1] * (doppler_beta - 1) - laser_w[1] * doppler_beta * t1);
+      eta[1] = 0;
 
       gsl_matrix_complex_set(A,1,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,1, {eta[0],-eta[1]});
