@@ -96,7 +96,7 @@ protected:
   double m_rabi_threshold;
 
   /// Difference between the frequencies of the laser fields
-  double laser_domh = laser_w[0]-laser_w[1];
+  double laser_domh;
 
   /// moving velocity
   double v_0;
@@ -173,6 +173,7 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
     laser_k[1] = m_params->Get_VConstant("laser_k", 1);
     laser_w[0] = m_params->Get_VConstant("laser_w", 0);
     laser_w[1] = m_params->Get_VConstant("laser_w", 1);
+    laser_domh = laser_w[0]-laser_w[1];
 
     v_0 = m_params->Get_Constant("v_0");
     g_0 = m_params->Get_Constant("g_0");
@@ -604,18 +605,14 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       //Raman
       double doppler_beta = (v_0-g_0*t1)/c_p;
 
-      sincos(doppler_beta * laser_w[0] * t1 , &im1, &re1 );
-
-      eta[0] = -Amp_1[0] * cos( laser_k[0] * x[0] * (doppler_beta-1) - t1 * doppler_beta * laser_w[0] ) * re1;
-      eta[1] = -Amp_1[0] * cos( laser_k[0] * x[0] * (doppler_beta-1) - t1 * doppler_beta * laser_w[0] ) * im1;
+      eta[0] = -Amp_1[0] * cos( ((doppler_beta - 1) * x[0] * laser_k[0] - t1 * laser_w[0] * doppler_beta));
+      eta[1] = 0;
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
-      sincos(-doppler_beta * laser_w[1] * t1 , &im1, &re1 );
-
-      eta[0] = Amp_2[1] * cos( (laser_k[1] * x[0] + t1 * laser_w[1]) * doppler_beta + laser_k[1]*x[0] )* re1;
-      eta[1] = Amp_2[1] * cos( (laser_k[1] * x[0] + t1 * laser_w[1]) * doppler_beta + laser_k[1]*x[0] )* im1;
+      eta[0] = -Amp_2[1] * cos( ((laser_k[1] * x[0] + t1 * laser_w[1]) * doppler_beta + laser_k[1] * x[0]));
+      eta[1] = 0;
 
       gsl_matrix_complex_set(A,1,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,1, {eta[0],-eta[1]});
