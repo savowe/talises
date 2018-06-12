@@ -593,10 +593,10 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       		phi[i] = 0.0;
       	} else
       	{
-      		phi[i] = this->m_b*log( tmp_density );
+      		phi[i] = -this->m_b*log( tmp_density );
       	}
         x = this->m_fields[0]->Get_x(l);
-        phi[i] += beta*x-DeltaL[i];
+        phi[i] += -DeltaL[i];
         gsl_matrix_complex_set(A,i,i, {phi[i],0});
       }
 
@@ -605,13 +605,13 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       //Raman
       double doppler_beta = (v_0-g_0*t1)/c_p;
 
-      eta[0] = -Amp_1[0] * cos( ((doppler_beta - 1) * x[0] * laser_k[0] - t1 * laser_w[0] * doppler_beta));
+      eta[0] = -Amp_1[0] *(cos( (x[0] * laser_k[0] * (doppler_beta - 1) - t1 * laser_w[0] * doppler_beta)) + cos( ((laser_k[0] * x[0] + t1 * laser_w[0]) * doppler_beta + laser_k[0] * x[0])));
       eta[1] = 0;
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
-      eta[0] = -Amp_2[1] * cos( ((laser_k[1] * x[0] + t1 * laser_w[1]) * doppler_beta + laser_k[1] * x[0]));
+      eta[0] = -Amp_2[1] * (cos( (x[0] * (doppler_beta - 1) * laser_k[1] - t1 * laser_w[1] * doppler_beta)) + cos( ((laser_k[1] * x[0] + t1 * laser_w[1]) * doppler_beta + laser_k[1] * x[0])));
       eta[1] = 0;
 
       gsl_matrix_complex_set(A,1,2, {eta[0],eta[1]});

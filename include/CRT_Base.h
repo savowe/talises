@@ -418,7 +418,7 @@ void CRT_Base<T,dim,no_int_states>::Do_NL_Step()
     		phi[i] += 0.0;
     	} else
     	{
-    		phi[i] += this->m_b*log( tmp_density );
+    		phi[i] = -this->m_b*log( tmp_density );
     	}
         phi[i] *= dt;
       }

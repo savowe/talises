@@ -4,7 +4,7 @@
   <FILENAME_2>0.0000_2.bin</FILENAME_2>
   <FILENAME_3>0.0000_3.bin</FILENAME_3>
   <CONSTANTS>
-    <b>0.000000</b>
+    <b>0.0000001</b>
     <v_0>4</v_0>
     <g_0>0</g_0>
     <c_p>299792458</c_p>    
@@ -25,7 +25,7 @@
     <NA>700</NA>
   </ALGORITHM>
   <SEQUENCE>
-    <raman dt="0.01" Nk="100" output_freq="none" pn_freq="each" rabi_output_freq="none">100</raman>
-    <freeprop dt="0.2" Nk="5000" output_freq="each" pn_freq="last">1000</freeprop>
+    <raman dt="0.02" Nk="100" output_freq="none" pn_freq="each" rabi_output_freq="none">18</raman>
+    <freeprop dt="0.2" Nk="5000" output_freq="each" pn_freq="last">8000</freeprop>
   </SEQUENCE>
 </SIMULATION>
