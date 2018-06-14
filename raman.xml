@@ -9,23 +9,23 @@
     <g_0>0</g_0>
     <c_p>299792458</c_p>    
     <chirp>0</chirp>
+    <omega_ig>2414216728.27431</omega_ig>
+    <omega_ie>2414173782.70274</omega_ie>
     <rabi_threshold>4</rabi_threshold>
   </CONSTANTS>
   <VCONSTANTS>
-    <Amp_1>-14,-10</Amp_1>
-    <Amp_2>-10,-14</Amp_2>
+    <Amp_1>-14.5,-14.5</Amp_1>
+    <Amp_2>-14.5,-14.5</Amp_2>
     <Alpha_1>0.000365368,0.000365368,0.000365368</Alpha_1>
-    <Delta_L>4398.22971502571, 4462.74748502571, 0</Delta_L>
     <Beta>0,0,0</Beta>
-    <laser_k>8.05294551487546, 8.05280204866011</laser_k>
     <laser_w>2414212330.04459, 2414169319.95525</laser_w>
   </VCONSTANTS>
-  <ALGORITHM>
-    <NK>25</NK>
-    <NA>700</NA>
-  </ALGORITHM>
   <SEQUENCE>
-    <raman dt="0.02" Nk="100" output_freq="none" pn_freq="each" rabi_output_freq="none">18</raman>
-    <freeprop dt="0.2" Nk="5000" output_freq="each" pn_freq="last">8000</freeprop>
+    <raman dt="0.02" Nk="100" output_freq="last" pn_freq="each" rabi_output_freq="none">18</raman>
+    <freeprop dt="0.2" Nk="5000" output_freq="each" pn_freq="last">4000</freeprop>
+    <raman dt="0.02" Nk="100" output_freq="last" pn_freq="each" rabi_output_freq="none">36</raman>
+    <freeprop dt="0.2" Nk="5000" output_freq="each" pn_freq="last">4000</freeprop>
+    <raman dt="0.02" Nk="100" output_freq="last" pn_freq="each" rabi_output_freq="none">18</raman>
+    <freeprop dt="0.2" Nk="5000" output_freq="each" pn_freq="last">1000</freeprop>
   </SEQUENCE>
 </SIMULATION>

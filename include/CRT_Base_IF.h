@@ -74,7 +74,7 @@ protected:
       chirp_rate, ///< Chirp rate of the frequency of the laser fields
   	  laser_w; ///< angular frequency of the lasers
 
-  double chirp;
+  double chirp_alpha;
   bool amp_is_t;
 
   static void Do_NL_Step_Wrapper(void *,sequence_item &);
@@ -94,6 +94,9 @@ protected:
 
   /// Area around momentum states
   double m_rabi_threshold;
+
+  ///< Energy difference between the three internal states: omega_ig, omega_ie
+  double omega_ig, omega_ie;
 
   /// Difference between the frequencies of the laser fields
   double laser_domh;
@@ -160,8 +163,6 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
   char s[100];
   for ( int i=0; i<dim; i++)
     beta[i] = m_params->Get_VConstant("Beta",i);
-  for ( int i=0; i<no_int_states; i++)
-    DeltaL[i] = m_params->Get_VConstant("Delta_L",i);
 
   try
   {
@@ -169,17 +170,20 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
     Amp_1[1] = m_params->Get_VConstant("Amp_1",1); // 0 ist nach rechts (positiv) und 1 ist nach links (negativ)
     Amp_2[0] = m_params->Get_VConstant("Amp_2",0);
     Amp_2[1] = m_params->Get_VConstant("Amp_2",1);
-    laser_k[0] = m_params->Get_VConstant("laser_k", 0);
-    laser_k[1] = m_params->Get_VConstant("laser_k", 1);
     laser_w[0] = m_params->Get_VConstant("laser_w", 0);
     laser_w[1] = m_params->Get_VConstant("laser_w", 1);
     laser_domh = laser_w[0]-laser_w[1];
 
+    omega_ig = m_params->Get_Constant("omega_ig");
+    omega_ie = m_params->Get_Constant("omega_ie");
     v_0 = m_params->Get_Constant("v_0");
     g_0 = m_params->Get_Constant("g_0");
     c_p = m_params->Get_Constant("c_p");
     m_rabi_threshold = m_params->Get_Constant("rabi_threshold");
-    chirp = m_params->Get_Constant("chirp");
+    chirp_alpha = m_params->Get_Constant("chirp");
+
+    laser_k[0] = laser_w[0]/c_p;
+    laser_k[1] = laser_w[1]/c_p;
   }
   catch (std::string &str )
   {
@@ -575,8 +579,13 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     gsl_vector_complex *Psi_2 = gsl_vector_complex_alloc(no_int_states);
     gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
 
-    double phi[no_int_states],re1,im1,eta[2];
+    double phi[no_int_states], re1, im1, eta[2];
     CPoint<dim> x;
+    double chirp_alpha = this->chirp_alpha;
+    double doppler_beta = (v_0-g_0*t1)/c_p;
+    DeltaL[0] = laser_w[0]*(1+chirp_alpha)-omega_ig;
+    DeltaL[1] = laser_w[1]*(1+chirp_alpha)-omega_ie;
+    DeltaL[2] = 0;
 
     #pragma omp for
     for ( int l=0; l<this->m_no_of_pts; l++ )
@@ -596,22 +605,21 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       		phi[i] = -this->m_b*log( tmp_density );
       	}
         x = this->m_fields[0]->Get_x(l);
-        phi[i] += -DeltaL[i];
+        phi[i] += DeltaL[i];
         gsl_matrix_complex_set(A,i,i, {phi[i],0});
       }
 
       //---------------------------------------------
 
       //Raman
-      double doppler_beta = (v_0-g_0*t1)/c_p;
 
-      eta[0] = -Amp_1[0] *(cos( (x[0] * laser_k[0] * (doppler_beta - 1) - t1 * laser_w[0] * doppler_beta)) + cos( ((laser_k[0] * x[0] + t1 * laser_w[0]) * doppler_beta + laser_k[0] * x[0])));
+      eta[0] = -(Amp_1[1] * cos( (chirp_alpha * (1 + doppler_beta) * t1 * t1 + t1 * laser_w[0] * doppler_beta + x[0] * laser_k[0] * (1 + doppler_beta))) + Amp_1[0] * cos( ((doppler_beta - 1) * chirp_alpha * t1 * t1 + t1 * laser_w[0] * doppler_beta - x[0] * (doppler_beta - 1) * laser_k[0])));
       eta[1] = 0;
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
-      eta[0] = -Amp_2[1] * (cos( (x[0] * (doppler_beta - 1) * laser_k[1] - t1 * laser_w[1] * doppler_beta)) + cos( ((laser_k[1] * x[0] + t1 * laser_w[1]) * doppler_beta + laser_k[1] * x[0])));
+      eta[0] = -(Amp_2[1] * cos( (chirp_alpha * (1 + doppler_beta) * t1 * t1 + t1 * laser_w[1] * doppler_beta + x[0] * laser_k[1] * (1 + doppler_beta))) + Amp_2[0] * cos( ((doppler_beta - 1) * chirp_alpha * t1 * t1 + t1 * laser_w[1] * doppler_beta - x[0] * laser_k[1] * (doppler_beta - 1))));
       eta[1] = 0;
 
       gsl_matrix_complex_set(A,1,2, {eta[0],eta[1]});
