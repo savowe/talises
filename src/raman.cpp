@@ -21,11 +21,6 @@
 // along with ATUS2.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-/*  Solving:
- *  |V11  Ω1    0 |
- *  |Ω1   V22   Ω2|
- *  |0    Ω2   V33|
- */
 
 #include <iomanip>
 #include <cmath>
@@ -42,7 +37,7 @@ using namespace std;
 namespace RT_Solver
 {
   template<class T, int dim>
-  class Raman_single : public CRT_Base_IF<T,dim,3>
+  class Raman_single : public CRT_Base_IF<T,dim,4> //TODO number of internal states sollte erkannt werden.
   {
   public:
     Raman_single( ParameterHandler * );
@@ -53,7 +48,7 @@ namespace RT_Solver
   };
 
   template<class T, int dim>
-  Raman_single<T,dim>::Raman_single( ParameterHandler *p ) : CRT_Base_IF<T,dim,3>( p )
+  Raman_single<T,dim>::Raman_single( ParameterHandler *p ) : CRT_Base_IF<T,dim,4>( p )
   {
   }
 

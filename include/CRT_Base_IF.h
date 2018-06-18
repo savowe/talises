@@ -66,8 +66,10 @@ protected:
   CPoint<dim> beta;
   /// Detuning. Energy difference between lasers and the excited state
   std::array<double,no_int_states> DeltaL;
-  std::array<double,2> Amp_1,  ///< Amplitude of the light fields \f$ \mu E\f$ */
-  	  Amp_2,
+  std::array<double,2> Amp_1_sm,  ///< Amplitude of the light fields \f$ \mu E\f$ */
+  	  Amp_1_sp,///< sm and sp represent left- and right-handed polarization of light
+	  Amp_2_sm,
+	  Amp_2_sp,
       laser_k, ///< Wave vector of the laser fields
       laser_dk, ///< Difference between wave vectors
       phase, ///< Additional phase (for example phase errors)
@@ -166,10 +168,14 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
 
   try
   {
-    Amp_1[0] = m_params->Get_VConstant("Amp_1",0); //TODO Amplituden sind verwirrend
-    Amp_1[1] = m_params->Get_VConstant("Amp_1",1); // 0 ist nach rechts (positiv) und 1 ist nach links (negativ)
-    Amp_2[0] = m_params->Get_VConstant("Amp_2",0);
-    Amp_2[1] = m_params->Get_VConstant("Amp_2",1);
+    Amp_1_sm[0] = m_params->Get_VConstant("Amp_1_sm",0); //TODO Amplituden sind verwirrend
+    Amp_1_sm[1] = m_params->Get_VConstant("Amp_1_sm",1); // 0 ist nach rechts (positiv) und 1 ist nach links (negativ)
+    Amp_2_sm[0] = m_params->Get_VConstant("Amp_2_sm",0);
+    Amp_2_sm[1] = m_params->Get_VConstant("Amp_2_sm",1);
+    Amp_1_sp[0] = m_params->Get_VConstant("Amp_1_sp",0);
+    Amp_1_sp[1] = m_params->Get_VConstant("Amp_1_sp",1);
+    Amp_2_sp[0] = m_params->Get_VConstant("Amp_2_sp",0);
+    Amp_2_sp[1] = m_params->Get_VConstant("Amp_2_sp",1);
     laser_w[0] = m_params->Get_VConstant("laser_w", 0);
     laser_w[1] = m_params->Get_VConstant("laser_w", 1);
     laser_domh = laser_w[0]-laser_w[1];
@@ -504,8 +510,8 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Bragg()
       {
         sincos(((-laser_domh+chirp_rate[i]*t1)*t1+laser_k[i]*x[0]-0.5*phase[0]), &im1, &re1 );
 
-        eta[0] = Amp_1[0]*re1/2+Amp_1[1]*re1/2;
-        eta[1] = Amp_1[0]*im1/2-Amp_1[1]*im1/2;
+        eta[0] = Amp_1_sm[0]*re1/2+Amp_1_sm[1]*re1/2;
+        eta[1] = Amp_1_sm[0]*im1/2-Amp_1_sm[1]*im1/2;
 
 //      sincos((0.5*laser_dk[0]), &im1, &re1);
 
@@ -567,6 +573,12 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     const double dt = -m_header.dt;
     const double t1 = this->Get_t();
 
+    std::array<double,2> laser_k_tmp, laser_w_tmp;
+    const double d_02_sm = -sqrt(5.0/24.0);
+    const double d_03_sp = sqrt(5.0/24.0);
+    const double d_12_sm = sqrt(1.0/120.0);
+    const double d_13_sp = sqrt(1.0/120.0);
+
     vector<fftw_complex *> Psi;
     for ( int i=0; i<no_int_states; i++ )
       Psi.push_back(m_fields[i]->Getp2In());
@@ -582,10 +594,17 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     double phi[no_int_states], re1, im1, eta[2];
     CPoint<dim> x;
     double chirp_alpha = this->chirp_alpha;
-    double doppler_beta = (v_0-g_0*t1)/c_p;
-    DeltaL[0] = laser_w[0]*(1+chirp_alpha)-omega_ig;
-    DeltaL[1] = laser_w[1]*(1+chirp_alpha)-omega_ie;
+    double doppler_beta = (v_0+g_0*t1/1000000)/c_p;
+
+    laser_w_tmp[0] = laser_w[0]*(1.0+chirp_alpha*t1);
+    laser_k_tmp[0] = laser_w[0]/c_p;
+    laser_w_tmp[1] = laser_w[1]*(1.0-chirp_alpha*t1);
+    laser_k_tmp[1] = laser_w[1]/c_p;
+
+    DeltaL[0] = laser_w_tmp[0]-omega_ig;
+    DeltaL[1] = laser_w_tmp[1]-omega_ie;
     DeltaL[2] = 0;
+    DeltaL[3] = 0;
 
     #pragma omp for
     for ( int l=0; l<this->m_no_of_pts; l++ )
@@ -593,7 +612,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       gsl_matrix_complex_set_zero(A);
       gsl_matrix_complex_set_zero(B);
 
-      //Diagonal elements + Nonlinear part: \Delta+g|\Phi|^2+\beta*x
+      //Diagonal elements + Nonlinear part: \Delta+g|\Phi|^2
       for ( int i=0; i<no_int_states; i++ )
       {
       	double tmp_density = Psi[i][l][0]*Psi[i][l][0] + Psi[i][l][1]*Psi[i][l][1];
@@ -613,18 +632,33 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
 
       //Raman
 
-      eta[0] = -(Amp_1[1] * cos( (chirp_alpha * (1 + doppler_beta) * t1 * t1 + t1 * laser_w[0] * doppler_beta + x[0] * laser_k[0] * (1 + doppler_beta))) + Amp_1[0] * cos( ((doppler_beta - 1) * chirp_alpha * t1 * t1 + t1 * laser_w[0] * doppler_beta - x[0] * (doppler_beta - 1) * laser_k[0])));
+      eta[0] = Amp_1_sm[0] * cos( (x[0] * (doppler_beta - 1.0) * laser_k_tmp[0] - t1 * laser_w_tmp[0] * doppler_beta)) + Amp_1_sm[1] * cos( ((laser_k_tmp[0] * x[0] + t1 * laser_w_tmp[0]) * doppler_beta + laser_k_tmp[0] * x[0]));
+      eta[0] *= d_02_sm;
       eta[1] = 0;
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
-      eta[0] = -(Amp_2[1] * cos( (chirp_alpha * (1 + doppler_beta) * t1 * t1 + t1 * laser_w[1] * doppler_beta + x[0] * laser_k[1] * (1 + doppler_beta))) + Amp_2[0] * cos( ((doppler_beta - 1) * chirp_alpha * t1 * t1 + t1 * laser_w[1] * doppler_beta - x[0] * laser_k[1] * (doppler_beta - 1))));
+      eta[0] = Amp_1_sp[0] * cos( (x[0] * (doppler_beta - 1.0) * laser_k_tmp[0] - t1 * laser_w_tmp[0] * doppler_beta))+ Amp_1_sp[1] * cos( ((laser_k_tmp[0] * x[0] + t1 * laser_w_tmp[0]) * doppler_beta + laser_k_tmp[0] * x[0]));
+      eta[0] *= d_03_sp;
+      eta[1] = 0;
+
+      gsl_matrix_complex_set(A,0,3, {eta[0],eta[1]});
+      gsl_matrix_complex_set(A,3,0, {eta[0],-eta[1]});
+
+      eta[0] = Amp_2_sm[0] * cos( (x[0] * (doppler_beta - 1.0) * laser_k_tmp[1] - t1 * laser_w_tmp[1] * doppler_beta)) + Amp_2_sm[1] * cos( ((laser_k_tmp[1] * x[0] + t1 * laser_w_tmp[1]) * doppler_beta + laser_k_tmp[1] * x[0]));
+      eta[0] *= d_12_sm;
       eta[1] = 0;
 
       gsl_matrix_complex_set(A,1,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,1, {eta[0],-eta[1]});
 
+      eta[0] = Amp_2_sp[0] * cos( (x[0] * (doppler_beta - 1.0) * laser_k_tmp[1] - t1 * laser_w_tmp[1] * doppler_beta)) + Amp_2_sp[1] * cos( ((laser_k_tmp[1] * x[0] + t1 * laser_w_tmp[1]) * doppler_beta + laser_k_tmp[1] * x[0]));
+      eta[0] *= d_13_sp;
+      eta[1] = 0;
+
+      gsl_matrix_complex_set(A,1,3, {eta[0],eta[1]});
+      gsl_matrix_complex_set(A,3,1, {eta[0],-eta[1]});
       //--------------------------------------------
 
       //Compute Eigenvalues + Eigenvector
