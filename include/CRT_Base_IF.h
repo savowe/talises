@@ -74,9 +74,9 @@ protected:
       laser_dk, ///< Difference between wave vectors
       phase, ///< Additional phase (for example phase errors)
       chirp_rate, ///< Chirp rate of the frequency of the laser fields
+	  chirp_alpha,
   	  laser_w; ///< angular frequency of the lasers
 
-  double chirp_alpha;
   bool amp_is_t;
 
   static void Do_NL_Step_Wrapper(void *,sequence_item &);
@@ -176,6 +176,8 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
     Amp_1_sp[1] = m_params->Get_VConstant("Amp_1_sp",1);
     Amp_2_sp[0] = m_params->Get_VConstant("Amp_2_sp",0);
     Amp_2_sp[1] = m_params->Get_VConstant("Amp_2_sp",1);
+    chirp_alpha[0] = m_params->Get_VConstant("chirp",0);
+    chirp_alpha[1] = m_params->Get_VConstant("chirp",1);
     laser_w[0] = m_params->Get_VConstant("laser_w", 0);
     laser_w[1] = m_params->Get_VConstant("laser_w", 1);
     laser_domh = laser_w[0]-laser_w[1];
@@ -186,7 +188,7 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
     g_0 = m_params->Get_Constant("g_0");
     c_p = m_params->Get_Constant("c_p");
     m_rabi_threshold = m_params->Get_Constant("rabi_threshold");
-    chirp_alpha = m_params->Get_Constant("chirp");
+
 
     laser_k[0] = laser_w[0]/c_p;
     laser_k[1] = laser_w[1]/c_p;
@@ -593,12 +595,12 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
 
     double phi[no_int_states], re1, im1, eta[2];
     CPoint<dim> x;
-    double chirp_alpha = this->chirp_alpha;
+    std::array<double,2> chirp_alpha = this->chirp_alpha;
     double doppler_beta = (v_0+g_0*t1/1000000)/c_p;
 
-    laser_w_tmp[0] = laser_w[0]*(1.0+chirp_alpha*t1);
+    laser_w_tmp[0] = laser_w[0]+chirp_alpha[0]*t1;
     laser_k_tmp[0] = laser_w[0]/c_p;
-    laser_w_tmp[1] = laser_w[1]*(1.0-chirp_alpha*t1);
+    laser_w_tmp[1] = laser_w[1]-chirp_alpha[1]*t1;
     laser_k_tmp[1] = laser_w[1]/c_p;
 
     DeltaL[0] = laser_w_tmp[0]-omega_ig;
