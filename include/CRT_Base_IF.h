@@ -76,6 +76,7 @@ protected:
       chirp_rate, ///< Chirp rate of the frequency of the laser fields
 	  chirp_alpha,
   	  laser_w; ///< angular frequency of the lasers
+  std::array<double,no_int_states-2> omega_ij;
 
   bool amp_is_t;
 
@@ -184,6 +185,13 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
 
     omega_ig = m_params->Get_Constant("omega_ig");
     omega_ie = m_params->Get_Constant("omega_ie");
+    for ( int i=0; i<no_int_states-2; i++)
+    	omega_ij[i] = m_params->Get_VConstant("omega_ij",i);
+    for (int i=2; i<no_int_states; i++)
+    {
+    	DeltaL[i] = omega_ij[i-2];
+    }
+
     v_0 = m_params->Get_Constant("v_0");
     g_0 = m_params->Get_Constant("g_0");
     c_p = m_params->Get_Constant("c_p");
@@ -596,17 +604,15 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     double phi[no_int_states], re1, im1, eta[2];
     CPoint<dim> x;
     std::array<double,2> chirp_alpha = this->chirp_alpha;
-    double doppler_beta = (v_0+g_0*t1/1000000)/c_p;
+    double doppler_beta = v_0/c_p + (g_0*t1)/c_p;
 
     laser_w_tmp[0] = laser_w[0]+chirp_alpha[0]*t1;
     laser_k_tmp[0] = laser_w[0]/c_p;
-    laser_w_tmp[1] = laser_w[1]-chirp_alpha[1]*t1;
+    laser_w_tmp[1] = laser_w[1]+chirp_alpha[1]*t1;
     laser_k_tmp[1] = laser_w[1]/c_p;
 
     DeltaL[0] = laser_w_tmp[0]-omega_ig;
     DeltaL[1] = laser_w_tmp[1]-omega_ie;
-    DeltaL[2] = 0;
-    DeltaL[3] = 0;
 
     #pragma omp for
     for ( int l=0; l<this->m_no_of_pts; l++ )
