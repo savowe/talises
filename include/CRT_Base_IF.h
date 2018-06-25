@@ -611,6 +611,8 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     laser_w_tmp[1] = laser_w[1]+chirp_alpha[1]*t1;
     laser_k_tmp[1] = laser_w[1]/c_p;
 
+    double laser_domh_tmp = laser_w_tmp[0]-laser_w_tmp[1];
+
     DeltaL[0] = laser_w_tmp[0]-omega_ig;
     DeltaL[1] = laser_w_tmp[1]-omega_ie;
 
@@ -637,33 +639,65 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       }
 
       //---------------------------------------------
-
+      eta[1] = 0;
       //Raman
 
-      eta[0] = Amp_1_sm[0] * cos( (x[0] * (doppler_beta - 1.0) * laser_k_tmp[0] - t1 * laser_w_tmp[0] * doppler_beta)) + Amp_1_sm[1] * cos( ((laser_k_tmp[0] * x[0] + t1 * laser_w_tmp[0]) * doppler_beta + laser_k_tmp[0] * x[0]));
+      eta[0] = Amp_1_sm[0] * cos( x[0] * laser_k_tmp[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1); //E1-Feld in pos. richtung
+      eta[0] += Amp_1_sm[1] * cos( x[0] * laser_k_tmp[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1);//E1-Feld in neg. richtung
+      /* Cross Coupling */
+      sincos(-laser_domh_tmp/2*t1, &im1, &re1 );
+      eta[0] += re1 * Amp_2_sm[0] * cos( x[0] * laser_k_tmp[1] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1 - laser_domh_tmp/2 * t1);//E2-Feld in pos. richtung
+	  eta[1] = im1 * Amp_2_sm[0] * cos( x[0] * laser_k_tmp[1] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1 - laser_domh_tmp/2 * t1);
+      eta[0] += re1 * Amp_2_sm[1] * cos( x[0] * laser_k_tmp[1] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1 - laser_domh_tmp/2 * t1);//E2-Feld in neg. richtung
+      eta[1] += im1 * Amp_2_sm[1] * cos( x[0] * laser_k_tmp[1] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1 - laser_domh_tmp/2 * t1);
+
       eta[0] *= d_02_sm;
-      eta[1] = 0;
+      eta[1] *= d_02_sm;
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
-      eta[0] = Amp_1_sp[0] * cos( (x[0] * (doppler_beta - 1.0) * laser_k_tmp[0] - t1 * laser_w_tmp[0] * doppler_beta))+ Amp_1_sp[1] * cos( ((laser_k_tmp[0] * x[0] + t1 * laser_w_tmp[0]) * doppler_beta + laser_k_tmp[0] * x[0]));
+      eta[0] = Amp_1_sp[0] * cos( x[0] * laser_k_tmp[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1); //E1-Feld in pos. richtung
+      eta[0] += Amp_1_sp[1] * cos( x[0] * laser_k_tmp[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1);//E1-Feld in neg. richtung
+      /* Cross Coupling */
+      sincos(-laser_domh_tmp/2*t1, &im1, &re1 );
+      eta[0] += re1 * Amp_2_sp[0] * cos( x[0] * laser_k_tmp[1] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1 - laser_domh_tmp/2 * t1);//E2-Feld in pos. richtung
+	  eta[1] = im1 * Amp_2_sp[0] * cos( x[0] * laser_k_tmp[1] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1 - laser_domh_tmp/2 * t1);
+      eta[0] += re1 * Amp_2_sp[1] * cos( x[0] * laser_k_tmp[1] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1 - laser_domh_tmp/2 * t1);//E2-Feld in neg. richtung
+      eta[1] += im1 * Amp_2_sp[1] * cos( x[0] * laser_k_tmp[1] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1 - laser_domh_tmp/2 * t1);
+
       eta[0] *= d_03_sp;
-      eta[1] = 0;
+      eta[1] *= d_03_sp;
 
       gsl_matrix_complex_set(A,0,3, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,3,0, {eta[0],-eta[1]});
 
-      eta[0] = Amp_2_sm[0] * cos( (x[0] * (doppler_beta - 1.0) * laser_k_tmp[1] - t1 * laser_w_tmp[1] * doppler_beta)) + Amp_2_sm[1] * cos( ((laser_k_tmp[1] * x[0] + t1 * laser_w_tmp[1]) * doppler_beta + laser_k_tmp[1] * x[0]));
+      eta[0] = Amp_2_sm[0] * cos( x[0] * laser_k_tmp[1] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1); //E2-Feld in pos. richtung
+      eta[0] += Amp_2_sm[1] * cos( x[0] * laser_k_tmp[1] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1);//E2-Feld in neg. richtung
+      /* Cross Coupling */
+      sincos(laser_domh_tmp/2*t1, &im1, &re1 );
+      eta[0] += re1 * Amp_1_sm[0] * cos( x[0] * laser_k_tmp[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1 + laser_domh_tmp/2 * t1);//E1-Feld in pos. richtung
+	  eta[1] = im1 * Amp_1_sm[0] * cos( x[0] * laser_k_tmp[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1 + laser_domh_tmp/2 * t1);
+      eta[0] += re1 * Amp_1_sm[1] * cos( x[0] * laser_k_tmp[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1 + laser_domh_tmp/2 * t1);//E1-Feld in neg. richtung
+      eta[1] += im1 * Amp_1_sm[1] * cos( x[0] * laser_k_tmp[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1 + laser_domh_tmp/2 * t1);
+
       eta[0] *= d_12_sm;
-      eta[1] = 0;
+      eta[1] *= d_12_sm;
 
       gsl_matrix_complex_set(A,1,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,1, {eta[0],-eta[1]});
 
-      eta[0] = Amp_2_sp[0] * cos( (x[0] * (doppler_beta - 1.0) * laser_k_tmp[1] - t1 * laser_w_tmp[1] * doppler_beta)) + Amp_2_sp[1] * cos( ((laser_k_tmp[1] * x[0] + t1 * laser_w_tmp[1]) * doppler_beta + laser_k_tmp[1] * x[0]));
+      eta[0] = Amp_2_sp[0] * cos( x[0] * laser_k_tmp[1] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1); //E2-Feld in pos. richtung
+      eta[0] += Amp_2_sp[1] * cos( x[0] * laser_k_tmp[1] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1);//E2-Feld in neg. richtung
+      /* Cross Coupling */
+      sincos(laser_domh_tmp/2*t1, &im1, &re1 );
+      eta[0] += re1 * Amp_1_sp[0] * cos( x[0] * laser_k_tmp[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1 + laser_domh_tmp/2 * t1);//E1-Feld in pos. richtung
+	  eta[1] = im1 * Amp_1_sp[0] * cos( x[0] * laser_k_tmp[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1 + laser_domh_tmp/2 * t1);
+      eta[0] += re1 * Amp_1_sp[1] * cos( x[0] * laser_k_tmp[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1 + laser_domh_tmp/2 * t1);//E1-Feld in neg. richtung
+      eta[1] += im1 * Amp_1_sp[1] * cos( x[0] * laser_k_tmp[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1 + laser_domh_tmp/2 * t1);
+
       eta[0] *= d_13_sp;
-      eta[1] = 0;
+      eta[1] *= d_13_sp;
 
       gsl_matrix_complex_set(A,1,3, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,3,1, {eta[0],-eta[1]});

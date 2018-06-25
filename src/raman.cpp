@@ -70,14 +70,14 @@ int main( int argc, char *argv[] )
 
   ParameterHandler params(argv[1]);
   int dim=0;
-  int no_int_states = 0;
+  const int no_int_states = 4;
 
   try
   {
     std::string tmp = params.Get_simulation("DIM");
     dim = std::stod(tmp);
-    tmp = params.Get_simulation("NO_INT_STATES");
-    no_int_states = std::stod(tmp);
+    //tmp = params.Get_simulation("NO_INT_STATES");
+    //no_int_states = std::stod(tmp);
   }
   catch (mu::Parser::exception_type &e)
   {
@@ -88,7 +88,7 @@ int main( int argc, char *argv[] )
     cout << "Errc:     " << e.GetCode() << "\n";
   }
 
-  int no_of_threads = 16;
+  int no_of_threads = 32;
   char *envstr = getenv( "MY_NO_OF_THREADS" );
   if ( envstr != nullptr ) no_of_threads = atoi( envstr );
 
