@@ -1,9 +1,15 @@
 <SIMULATION>
   <DIM>1</DIM>
+<<<<<<< HEAD
+  <NO_INT_STATES>6</NO_INT_STATES>
+=======
+>>>>>>> refs/remotes/origin/polarization
   <FILENAME>0.0000_1.bin</FILENAME>
   <FILENAME_2>0.0000_2.bin</FILENAME_2>
   <FILENAME_3>0.0000_3.bin</FILENAME_3>
   <FILENAME_4>0.0000_3.bin</FILENAME_4>
+  <FILENAME_5>0.0000_3.bin</FILENAME_5>
+  <FILENAME_6>0.0000_3.bin</FILENAME_6>
   <CONSTANTS>
     <b>0.000000</b>
     <v_0>4</v_0>
@@ -18,7 +24,7 @@
     <Amp_1_sp>30.6724,30.6724</Amp_1_sp>
     <Amp_2_sm>153.3623,153.3623</Amp_2_sm>
     <Amp_2_sp>153.3623,153.3623</Amp_2_sp>
-    <omega_ij>-0.0, 0.0</omega_ij>
+    <omega_ij>-0.0, 0.0, 986.1270845, 986.1270845</omega_ij>
     <Alpha_1>0.000365368,0.000365368,0.000365368, 0.000365368</Alpha_1>
     <Beta>0,0,0,0</Beta>
     <laser_w>2414212330.04459, 2414169319.95525</laser_w>
@@ -27,9 +33,12 @@
   <SEQUENCE>
     <raman dt="0.0002" Nk="100" output_freq="last" pn_freq="each" rabi_output_freq="none">18</raman>
     <freeprop dt="0.2" Nk="5000" output_freq="each" pn_freq="last">4000</freeprop>
+<<<<<<< HEAD
+=======
     <raman dt="0.0002" Nk="100" output_freq="last" pn_freq="each" rabi_output_freq="none">36</raman>
     <freeprop dt="0.2" Nk="5000" output_freq="each" pn_freq="last">4000</freeprop>
     <raman dt="0.0002" Nk="100" output_freq="last" pn_freq="each" rabi_output_freq="none">18</raman>
     <freeprop dt="0.2" Nk="5000" output_freq="each" pn_freq="last">1000</freeprop>
+>>>>>>> refs/remotes/origin/polarization
   </SEQUENCE>
 </SIMULATION>
