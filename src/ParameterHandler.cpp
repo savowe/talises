@@ -67,6 +67,19 @@ void ParameterHandler::populate_sequence()
     item.Nk =  node.node().attribute("Nk").as_int(100);;
     item.comp = node.node().attribute("comp").as_int(0);
 
+    item.chirp_w1 = node.node().attribute("chirp_w1").as_double(0.00);
+    item.chirp_w2 = node.node().attribute("chirp_w2").as_double(0.00);
+    item.laser_w1 = node.node().attribute("laser_w1").as_double(0.00);
+    item.laser_w2 = node.node().attribute("laser_w2").as_double(0.00);
+    item.Amp_1_sm_r = node.node().attribute("Amp_1_sm_r").as_double(0.00);
+    item.Amp_1_sm_l = node.node().attribute("Amp_1_sm_l").as_double(0.00);
+    item.Amp_1_sp_r = node.node().attribute("Amp_1_sp_r").as_double(0.00);
+    item.Amp_1_sp_l = node.node().attribute("Amp_1_sp_l").as_double(0.00);
+    item.Amp_2_sm_r = node.node().attribute("Amp_2_sm_r").as_double(0.00);
+    item.Amp_2_sm_l = node.node().attribute("Amp_2_sm_l").as_double(0.00);
+    item.Amp_2_sp_r = node.node().attribute("Amp_2_sp_r").as_double(0.00);
+    item.Amp_2_sp_l = node.node().attribute("Amp_2_sp_l").as_double(0.00);
+
     tmpstr = node.node().attribute("output_freq").as_string("none");
     item.output_freq = m_map_freq[tmpstr];
     tmpstr = node.node().attribute("rabi_output_freq").as_string("none");

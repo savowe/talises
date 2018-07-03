@@ -20,6 +20,18 @@ struct sequence_item
   std::string content;
   std::vector<double> duration; ///< duration of the sequence
   double dt; ///< dt for this sequence
+  double chirp_w1;
+  double chirp_w2;
+  double laser_w1;
+  double laser_w2;
+  double Amp_1_sm_r;
+  double Amp_1_sm_l;
+  double Amp_1_sp_r;
+  double Amp_1_sp_l;
+  double Amp_2_sm_r;
+  double Amp_2_sm_l;
+  double Amp_2_sp_r;
+  double Amp_2_sp_l;
   double chirp_min; ///< lower bound of interval for a phasescan
   double chirp_max; ///< upper bound of interval for a phasescan
   int no_of_chirps; ///< number of chirps for a phasescan

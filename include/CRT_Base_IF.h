@@ -169,18 +169,6 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
 
   try
   {
-    Amp_1_sm[0] = m_params->Get_VConstant("Amp_1_sm",0); //TODO Amplituden sind verwirrend
-    Amp_1_sm[1] = m_params->Get_VConstant("Amp_1_sm",1); // 0 ist nach rechts (positiv) und 1 ist nach links (negativ)
-    Amp_2_sm[0] = m_params->Get_VConstant("Amp_2_sm",0);
-    Amp_2_sm[1] = m_params->Get_VConstant("Amp_2_sm",1);
-    Amp_1_sp[0] = m_params->Get_VConstant("Amp_1_sp",0);
-    Amp_1_sp[1] = m_params->Get_VConstant("Amp_1_sp",1);
-    Amp_2_sp[0] = m_params->Get_VConstant("Amp_2_sp",0);
-    Amp_2_sp[1] = m_params->Get_VConstant("Amp_2_sp",1);
-    chirp_alpha[0] = m_params->Get_VConstant("chirp",0);
-    chirp_alpha[1] = m_params->Get_VConstant("chirp",1);
-    laser_w[0] = m_params->Get_VConstant("laser_w", 0);
-    laser_w[1] = m_params->Get_VConstant("laser_w", 1);
     laser_domh = laser_w[0]-laser_w[1];
 
     omega_ig = m_params->Get_Constant("omega_ig");
@@ -197,9 +185,6 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
     c_p = m_params->Get_Constant("c_p");
     m_rabi_threshold = m_params->Get_Constant("rabi_threshold");
 
-
-    laser_k[0] = laser_w[0]/c_p;
-    laser_k[1] = laser_w[1]/c_p;
   }
   catch (std::string &str )
   {
@@ -904,6 +889,21 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int subN = int(max_duration / seq.dt);
     int Nk = seq.Nk;
     int Na = subN / seq.Nk;
+
+	this->laser_w[0] = seq.laser_w1;
+	this->laser_w[1] = seq.laser_w2;
+	this->chirp_alpha[0] = seq.chirp_w1;
+	this->chirp_alpha[1] = seq.chirp_w2;
+	this->laser_k[0] = this->laser_w[0]/this->c_p;
+	this->laser_k[1] = this->laser_w[1]/this->c_p;
+    this->Amp_1_sm[0] = seq.Amp_1_sm_r;
+    this->Amp_1_sm[1] = seq.Amp_1_sm_l;
+    this->Amp_2_sm[0] = seq.Amp_2_sm_r;
+    this->Amp_2_sm[1] = seq.Amp_2_sm_l;
+    this->Amp_1_sp[0] = seq.Amp_1_sp_r;
+    this->Amp_1_sp[1] = seq.Amp_1_sp_l;
+    this->Amp_2_sp[0] = seq.Amp_2_sp_r;
+    this->Amp_2_sp[1] = seq.Amp_2_sp_l;
 
     std::cout << "FYI: started new sequence " << seq.name << "\n";
     std::cout << "FYI: sequence no : " << seq_counter << "\n";
