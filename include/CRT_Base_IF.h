@@ -426,7 +426,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
     	 phi[i] = 0.0;
       } else
       {
-    	  phi[i] = this->m_b*log( tmp_density );
+    	  phi[i] = -this->m_b*log( tmp_density );
       }
       x = m_fields[0]->Get_x(l);
       phi[i] += beta[0]*x[0]-DeltaL[i];
