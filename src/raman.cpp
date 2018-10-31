@@ -37,7 +37,7 @@ using namespace std;
 namespace RT_Solver
 {
   template<class T, int dim>
-  class Raman_single : public CRT_Base_IF<T,dim,6> //TODO number of internal states sollte erkannt werden.
+  class Raman_single : public CRT_Base_IF<T,dim,2> //TODO number of internal states sollte erkannt werden.
   {
   public:
     Raman_single( ParameterHandler * );
@@ -48,7 +48,7 @@ namespace RT_Solver
   };
 
   template<class T, int dim>
-  Raman_single<T,dim>::Raman_single( ParameterHandler *p ) : CRT_Base_IF<T,dim,6>( p )
+  Raman_single<T,dim>::Raman_single( ParameterHandler *p ) : CRT_Base_IF<T,dim,2>( p )
   {
   }
 
