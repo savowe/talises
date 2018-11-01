@@ -1,14 +1,10 @@
 <SIMULATION>
   <DIM>1</DIM>
-  <FILENAME>0.0000_1.bin</FILENAME>
-  <FILENAME_2>0.0000_2.bin</FILENAME_2>
-  <FILENAME_3>0.0000_2.bin</FILENAME_3>
-  <FILENAME_4>0.0000_2.bin</FILENAME_4>
-  <FILENAME_5>0.0000_2.bin</FILENAME_5>
-  <FILENAME_6>0.0000_2.bin</FILENAME_6>
+  <FILENAME>0.000_1.bin</FILENAME>
+  <FILENAME_2>0.000_2.bin</FILENAME_2>
   <CONSTANTS>
     <b>0.000000</b>
-    <v_0>4</v_0>
+    <v_0>0</v_0>
     <g_0>0</g_0>
     <c_p>299792458</c_p>    
     <omega_ig>2414216730.11737</omega_ig>
@@ -19,22 +15,10 @@
     <omega_ij>-0.0, 0.0, 986.1270845, 986.1270845</omega_ij>
     <Alpha_1>0.000365368,0.000365368,0.000365368, 0.000365368</Alpha_1>
     <Beta>0,0,0,0</Beta>
+    <GS_1>4.37335363379797e-17,0.000000e+0</GS_1>
+    <GS_2>0.000000e+0,4.37335363379797e-17</GS_2>
   </VCONSTANTS>
   <SEQUENCE>
-    <!--
-    <raman 
-    Amp_1_sm_r="-35.1996" Amp_1_sm_l="-35.1996" Amp_1_sp_r="35.1996" Amp_1_sp_l="35.1996"
-    Amp_2_sm_r="59.0152" Amp_2_sm_l="59.0152" Amp_2_sp_r="59.0152" Amp_2_sp_l="59.0152"
-    chirp_w1="0" chirp_w2="0" laser_w1="2414212331.88765" laser_w2="2414169323.79252"
-    dt="0.02" Nk="100" output_freq="each" pn_freq="each" rabi_output_freq="none"
-    >18</raman>
-    -->
-    <raman 
-    Amp_1_sm_r="-5.1996" Amp_1_sm_l="-5.1996" Amp_1_sp_r="5.1996" Amp_1_sp_l="5.1996"
-    Amp_2_sm_r="0" Amp_2_sm_l="0" Amp_2_sp_r="0" Amp_2_sp_l="0"
-    chirp_w1="0" chirp_w2="0" laser_w1="2414216762.35291" laser_w2="2414169323.79252"
-    dt="0.02" Nk="100" output_freq="each" pn_freq="each" rabi_output_freq="none"
-    >18</raman>
-    <freeprop dt="0.2" Nk="5000" output_freq="each" pn_freq="last">4000</freeprop>
+    <freeprop dt="2" Nk="5000" output_freq="each" pn_freq="last">3000000</freeprop>
   </SEQUENCE>
 </SIMULATION>
