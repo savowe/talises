@@ -37,7 +37,7 @@ using namespace std;
 namespace RT_Solver
 {
   template<class T, int dim>
-  class Raman_single : public CRT_Base_IF<T,dim,2> //TODO number of internal states sollte erkannt werden.
+  class Raman_single : public CRT_Base_IF<T,dim,3> //TODO number of internal states sollte erkannt werden.
   {
   public:
     Raman_single( ParameterHandler * );
@@ -48,7 +48,7 @@ namespace RT_Solver
   };
 
   template<class T, int dim>
-  Raman_single<T,dim>::Raman_single( ParameterHandler *p ) : CRT_Base_IF<T,dim,2>( p )
+  Raman_single<T,dim>::Raman_single( ParameterHandler *p ) : CRT_Base_IF<T,dim,3>( p )
   {
   }
 
@@ -85,7 +85,7 @@ int main( int argc, char *argv[] )
     cout << "Errc:     " << e.GetCode() << "\n";
   }
 
-  int no_of_threads = 8;
+  int no_of_threads = 4;
 
   char *envstr = getenv( "MY_NO_OF_THREADS" );
   if ( envstr != nullptr ) no_of_threads = atoi( envstr );
