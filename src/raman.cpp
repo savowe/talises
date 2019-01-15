@@ -21,11 +21,6 @@
 // along with ATUS2.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-/*  Solving:
- *  |V11  Ω1    0 |
- *  |Ω1   V22   Ω2|
- *  |0    Ω2   V33|
- */
 
 #include <iomanip>
 #include <cmath>
@@ -42,7 +37,7 @@ using namespace std;
 namespace RT_Solver
 {
   template<class T, int dim>
-  class Raman_single : public CRT_Base_IF<T,dim,3>
+  class Raman_single : public CRT_Base_IF<T,dim,3> //TODO number of internal states sollte erkannt werden.
   {
   public:
     Raman_single( ParameterHandler * );
@@ -90,7 +85,8 @@ int main( int argc, char *argv[] )
     cout << "Errc:     " << e.GetCode() << "\n";
   }
 
-  int no_of_threads = 8;
+  int no_of_threads = 4;
+
   char *envstr = getenv( "MY_NO_OF_THREADS" );
   if ( envstr != nullptr ) no_of_threads = atoi( envstr );
 

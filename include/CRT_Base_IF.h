@@ -66,15 +66,18 @@ protected:
   CPoint<dim> beta;
   /// Detuning. Energy difference between lasers and the excited state
   std::array<double,no_int_states> DeltaL;
-  std::array<double,2> Amp_1,  ///< Amplitude of the light fields \f$ \mu E\f$ */
-  	  Amp_2,
+  std::array<double,2> Amp_1_sm,  ///< Amplitude of the light fields \f$ \mu E\f$ */
+  	  Amp_1_sp,///< sm and sp represent left- and right-handed polarization of light
+	  Amp_2_sm,
+	  Amp_2_sp,
       laser_k, ///< Wave vector of the laser fields
       laser_dk, ///< Difference between wave vectors
       phase, ///< Additional phase (for example phase errors)
       chirp_rate, ///< Chirp rate of the frequency of the laser fields
+	  chirp_alpha,
   	  laser_w; ///< angular frequency of the lasers
+  std::array<double,no_int_states-2> omega_ij;
 
-  double chirp_alpha;
   bool amp_is_t;
 
   static void Do_NL_Step_Wrapper(void *,sequence_item &);
@@ -166,24 +169,22 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
 
   try
   {
-    Amp_1[0] = m_params->Get_VConstant("Amp_1",0); //TODO Amplituden sind verwirrend
-    Amp_1[1] = m_params->Get_VConstant("Amp_1",1); // 0 ist nach rechts (positiv) und 1 ist nach links (negativ)
-    Amp_2[0] = m_params->Get_VConstant("Amp_2",0);
-    Amp_2[1] = m_params->Get_VConstant("Amp_2",1);
-    laser_w[0] = m_params->Get_VConstant("laser_w", 0);
-    laser_w[1] = m_params->Get_VConstant("laser_w", 1);
     laser_domh = laser_w[0]-laser_w[1];
 
     omega_ig = m_params->Get_Constant("omega_ig");
     omega_ie = m_params->Get_Constant("omega_ie");
+    for ( int i=0; i<no_int_states-2; i++)
+    	omega_ij[i] = m_params->Get_VConstant("omega_ij",i);
+    for (int i=2; i<no_int_states; i++)
+    {
+    	DeltaL[i] = omega_ij[i-2];
+    }
+
     v_0 = m_params->Get_Constant("v_0");
     g_0 = m_params->Get_Constant("g_0");
     c_p = m_params->Get_Constant("c_p");
     m_rabi_threshold = m_params->Get_Constant("rabi_threshold");
-    chirp_alpha = m_params->Get_Constant("chirp");
 
-    laser_k[0] = laser_w[0]/c_p;
-    laser_k[1] = laser_w[1]/c_p;
   }
   catch (std::string &str )
   {
@@ -425,7 +426,8 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
     	 phi[i] = 0.0;
       } else
       {
-    	  phi[i] = this->m_b*log( tmp_density );
+    	  phi[i] = -this->m_b*log( tmp_density );
+    	  phi[i] += this->m_gs[i+no_int_states*i]*tmp_density;
       }
       x = m_fields[0]->Get_x(l);
       phi[i] += beta[0]*x[0]-DeltaL[i];
@@ -504,8 +506,8 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Bragg()
       {
         sincos(((-laser_domh+chirp_rate[i]*t1)*t1+laser_k[i]*x[0]-0.5*phase[0]), &im1, &re1 );
 
-        eta[0] = Amp_1[0]*re1/2+Amp_1[1]*re1/2;
-        eta[1] = Amp_1[0]*im1/2-Amp_1[1]*im1/2;
+        eta[0] = Amp_1_sm[0]*re1/2+Amp_1_sm[1]*re1/2;
+        eta[1] = Amp_1_sm[0]*im1/2-Amp_1_sm[1]*im1/2;
 
 //      sincos((0.5*laser_dk[0]), &im1, &re1);
 
@@ -567,6 +569,16 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     const double dt = -m_header.dt;
     const double t1 = this->Get_t();
 
+    std::array<double,2> laser_k_tmp, laser_w_tmp;
+    const double d_02_sm = -sqrt(5.0/24.0);
+    const double d_03_sp = sqrt(5.0/24.0);
+    const double d_12_sm = sqrt(1.0/120.0);
+    const double d_13_sp = sqrt(1.0/120.0);
+    const double d_04_sm = sqrt(1.0/8.0);
+    const double d_05_sp = sqrt(1.0/8.0);
+    const double d_14_sm = -sqrt(1.0/8.0);
+    const double d_15_sp = sqrt(1.0/8.0);
+
     vector<fftw_complex *> Psi;
     for ( int i=0; i<no_int_states; i++ )
       Psi.push_back(m_fields[i]->Getp2In());
@@ -579,13 +591,21 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     gsl_vector_complex *Psi_2 = gsl_vector_complex_alloc(no_int_states);
     gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
 
-    double phi[no_int_states], re1, im1, eta[2];
+    double phi[no_int_states], re1, re2, im1, im2, eta[2];
+    double tmp_cos_pos, tmp_cos_pos_cc, tmp_cos_neg, tmp_cos_neg_cc;
     CPoint<dim> x;
-    double chirp_alpha = this->chirp_alpha;
-    double doppler_beta = (v_0-g_0*t1)/c_p;
-    DeltaL[0] = laser_w[0]*(1+chirp_alpha)-omega_ig;
-    DeltaL[1] = laser_w[1]*(1+chirp_alpha)-omega_ie;
-    DeltaL[2] = 0;
+    std::array<double,2> chirp_alpha = this->chirp_alpha;
+    double doppler_beta = v_0/c_p + (g_0*t1)/c_p;
+
+    laser_w_tmp[0] = laser_w[0]+chirp_alpha[0]*t1;
+    laser_k_tmp[0] = laser_w[0]/c_p;
+    laser_w_tmp[1] = laser_w[1]+chirp_alpha[1]*t1;
+    laser_k_tmp[1] = laser_w[1]/c_p;
+
+    double laser_domh_tmp = laser_w_tmp[0]-laser_w_tmp[1];
+
+    DeltaL[0] = laser_w_tmp[0]-omega_ig;
+    DeltaL[1] = laser_w_tmp[1]-omega_ie;
 
     #pragma omp for
     for ( int l=0; l<this->m_no_of_pts; l++ )
@@ -593,7 +613,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       gsl_matrix_complex_set_zero(A);
       gsl_matrix_complex_set_zero(B);
 
-      //Diagonal elements + Nonlinear part: \Delta+g|\Phi|^2+\beta*x
+      //Diagonal elements + Nonlinear part: \Delta+g|\Phi|^2
       for ( int i=0; i<no_int_states; i++ )
       {
       	double tmp_density = Psi[i][l][0]*Psi[i][l][0] + Psi[i][l][1]*Psi[i][l][1];
@@ -609,18 +629,28 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
         gsl_matrix_complex_set(A,i,i, {phi[i],0});
       }
 
+      //Raman
       //---------------------------------------------
 
-      //Raman
+      sincos(laser_k_tmp[0] * x[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1, &im1, &re1 ); // For right going light
+      sincos(laser_k_tmp[0] * x[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1, &im2, &re2 ); // For left going light
 
-      eta[0] = -(Amp_1[1] * cos( (chirp_alpha * (1 + doppler_beta) * t1 * t1 + t1 * laser_w[0] * doppler_beta + x[0] * laser_k[0] * (1 + doppler_beta))) + Amp_1[0] * cos( ((doppler_beta - 1) * chirp_alpha * t1 * t1 + t1 * laser_w[0] * doppler_beta - x[0] * (doppler_beta - 1) * laser_k[0])));
-      eta[1] = 0;
+      //---------------------------------------------
+
+      eta[0] = re1 * Amp_1_sm[0] + re2 * Amp_1_sm[1];
+      eta[1] = im1 * Amp_1_sm[0] + im2 * Amp_1_sm[1];
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
-      eta[0] = -(Amp_2[1] * cos( (chirp_alpha * (1 + doppler_beta) * t1 * t1 + t1 * laser_w[1] * doppler_beta + x[0] * laser_k[1] * (1 + doppler_beta))) + Amp_2[0] * cos( ((doppler_beta - 1) * chirp_alpha * t1 * t1 + t1 * laser_w[1] * doppler_beta - x[0] * laser_k[1] * (doppler_beta - 1))));
-      eta[1] = 0;
+      //---------------------------------------------
+
+      sincos(laser_k_tmp[1] * x[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1, &im1, &re1 );
+      sincos(laser_k_tmp[1] * x[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1, &im2, &re2 );
+      //---------------------------------------------
+
+      eta[0] = re1 * Amp_2_sm[0] + re2 * Amp_2_sm[1];
+      eta[1] = im1 * Amp_2_sm[0] + im2 * Amp_2_sm[1];
 
       gsl_matrix_complex_set(A,1,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,1, {eta[0],-eta[1]});
@@ -739,6 +769,21 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int subN = int(max_duration / seq.dt);
     int Nk = seq.Nk;
     int Na = subN / seq.Nk;
+
+	this->laser_w[0] = seq.laser_w1;
+	this->laser_w[1] = seq.laser_w2;
+	this->chirp_alpha[0] = seq.chirp_w1;
+	this->chirp_alpha[1] = seq.chirp_w2;
+	this->laser_k[0] = this->laser_w[0]/this->c_p;
+	this->laser_k[1] = this->laser_w[1]/this->c_p;
+    this->Amp_1_sm[0] = seq.Amp_1_sm_r;
+    this->Amp_1_sm[1] = seq.Amp_1_sm_l;
+    this->Amp_2_sm[0] = seq.Amp_2_sm_r;
+    this->Amp_2_sm[1] = seq.Amp_2_sm_l;
+    this->Amp_1_sp[0] = seq.Amp_1_sp_r;
+    this->Amp_1_sp[1] = seq.Amp_1_sp_l;
+    this->Amp_2_sp[0] = seq.Amp_2_sp_r;
+    this->Amp_2_sp[1] = seq.Amp_2_sp_l;
 
     std::cout << "FYI: started new sequence " << seq.name << "\n";
     std::cout << "FYI: sequence no : " << seq_counter << "\n";

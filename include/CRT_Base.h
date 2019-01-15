@@ -111,6 +111,9 @@ protected:
     *   \end{pmatrix}
     * \f]
     */
+  std::array<double,no_int_states *no_int_states> m_gs;
+
+  // constant for strength of logarithmic nonlinearity
   double m_b;
 
   /** Array of internal states of the wavefunction
@@ -160,6 +163,17 @@ CRT_Base<T,dim,no_int_states>::CRT_Base( ParameterHandler *params )
 
   //Read b from xml
   m_b = m_params->Get_Constant("b");
+
+
+  //Read gs from xml
+  for ( int i=0; i<no_int_states; i++ )
+  {
+    tmpstr = "GS_" + to_string(i+1);
+    for ( int j=0; j<no_int_states; j++ )
+    {
+      m_gs[j+no_int_states*i] = m_params->Get_VConstant( tmpstr, j );
+    }
+}
 
   //Read alpha from xml
   for ( int i=0; i<dim; i++ )
@@ -418,7 +432,8 @@ void CRT_Base<T,dim,no_int_states>::Do_NL_Step()
     		phi[i] += 0.0;
     	} else
     	{
-    		phi[i] = -this->m_b*log( tmp_density );
+    		phi[i] += -this->m_b*log( tmp_density );
+      	    phi[i] += this->m_gs[no_int_states*i]*tmp_density;
     	}
         phi[i] *= dt;
       }
