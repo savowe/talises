@@ -1,7 +1,7 @@
 <SIMULATION>
   <DIM>1</DIM>
   <FILENAME>0.000_1.bin</FILENAME>
-  <GUESS_1D>exp( -0.25*(x/sigma_x)^2 )</GUESS_1D>
+  <GUESS_1D>exp( -0.25*((x-x_0)/sigma_x)^2 )</GUESS_1D>
   <GUESS_2D>exp( -0.5*( (x/sigma_x)^2 + (y/sigma_y)^2 ) )</GUESS_2D>
   <GUESS_3D>exp( -0.5*( (x/sigma_x)^2 + (y/sigma_y)^2 + (z/sigma_z)^2 ) )</GUESS_3D>
   <POTENTIAL_1D>0.5*x^2</POTENTIAL_1D>
@@ -9,16 +9,17 @@
   <POTENTIAL_3D>0.5*x^2+0.5*y^2+0.5*z^2</POTENTIAL_3D>
   <CONSTANTS>
     <N>1</N>
-    <sigma_x>1</sigma_x>
+    <x_0>0</x_0>
+    <sigma_x>0.35</sigma_x>
     <sigma_y>1</sigma_y>
     <sigma_z>1</sigma_z>
     <stepsize>0.0001</stepsize>
   </CONSTANTS>
   <ALGORITHM>
-    <NX>16192</NX>
+    <NX>16384</NX>
     <NY>256</NY>
     <NZ>256</NZ>
-    <XMIN>-100</XMIN><XMAX>100</XMAX>
+    <XMIN>-200</XMIN><XMAX>200</XMAX>
     <YMIN>-10</YMIN><YMAX>10</YMAX> 
     <ZMIN>-10</ZMIN><ZMAX>10</ZMAX>
   </ALGORITHM>

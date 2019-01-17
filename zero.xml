@@ -8,7 +8,7 @@
      <N>1</N>
   </CONSTANTS>
   <ALGORITHM>
-    <NX>16192</NX>
+    <NX>16384</NX>
     <NY>256</NY>
     <NZ>256</NZ>
     <XMIN>-100</XMIN><XMAX>100</XMAX>

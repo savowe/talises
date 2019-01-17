@@ -67,9 +67,13 @@ protected:
   /// Detuning. Energy difference between lasers and the excited state
   std::array<double,no_int_states> DeltaL;
   std::array<double,2> Amp_1_sm,  ///< Amplitude of the light fields \f$ \mu E\f$ */
+  	  Phi_1_sm,
   	  Amp_1_sp,///< sm and sp represent left- and right-handed polarization of light
+	  Phi_1_sp,
 	  Amp_2_sm,
+	  Phi_2_sm,
 	  Amp_2_sp,
+	  Phi_2_sp,
       laser_k, ///< Wave vector of the laser fields
       laser_dk, ///< Difference between wave vectors
       phase, ///< Additional phase (for example phase errors)
@@ -632,8 +636,8 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       //Raman
       //---------------------------------------------
 
-      sincos(laser_k_tmp[0] * x[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1, &im1, &re1 ); // For right going light
-      sincos(laser_k_tmp[0] * x[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1, &im2, &re2 ); // For left going light
+      sincos(laser_k_tmp[0] * x[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1 - Phi_1_sm[0], &im1, &re1 ); // For right going light
+      sincos(laser_k_tmp[0] * x[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1 - Phi_1_sm[1], &im2, &re2 ); // For left going light
 
       //---------------------------------------------
 
@@ -645,8 +649,9 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
 
       //---------------------------------------------
 
-      sincos(laser_k_tmp[1] * x[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1, &im1, &re1 );
-      sincos(laser_k_tmp[1] * x[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1, &im2, &re2 );
+      sincos(laser_k_tmp[1] * x[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1 - Phi_2_sm[0], &im1, &re1 );
+      sincos(laser_k_tmp[1] * x[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1 - Phi_2_sm[1], &im2, &re2 );
+
       //---------------------------------------------
 
       eta[0] = re1 * Amp_2_sm[0] + re2 * Amp_2_sm[1];
@@ -777,13 +782,22 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
 	this->laser_k[0] = this->laser_w[0]/this->c_p;
 	this->laser_k[1] = this->laser_w[1]/this->c_p;
     this->Amp_1_sm[0] = seq.Amp_1_sm_r;
+    this->Phi_1_sm[0] = seq.Phi_1_sm_r;
     this->Amp_1_sm[1] = seq.Amp_1_sm_l;
+    this->Phi_1_sm[1] = seq.Phi_1_sm_l;
     this->Amp_2_sm[0] = seq.Amp_2_sm_r;
+    this->Phi_2_sm[0] = seq.Phi_2_sm_r;
     this->Amp_2_sm[1] = seq.Amp_2_sm_l;
+    this->Phi_2_sm[1] = seq.Phi_2_sm_l;
+
     this->Amp_1_sp[0] = seq.Amp_1_sp_r;
+    this->Phi_1_sp[0] = seq.Phi_1_sp_r;
     this->Amp_1_sp[1] = seq.Amp_1_sp_l;
+    this->Phi_1_sp[1] = seq.Phi_1_sp_l;
     this->Amp_2_sp[0] = seq.Amp_2_sp_r;
+    this->Phi_2_sp[0] = seq.Phi_2_sp_r;
     this->Amp_2_sp[1] = seq.Amp_2_sp_l;
+    this->Phi_2_sp[1] = seq.Phi_2_sp_l;
 
     std::cout << "FYI: started new sequence " << seq.name << "\n";
     std::cout << "FYI: sequence no : " << seq_counter << "\n";
