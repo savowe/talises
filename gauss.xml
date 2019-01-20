@@ -9,17 +9,17 @@
   <POTENTIAL_3D>0.5*x^2+0.5*y^2+0.5*z^2</POTENTIAL_3D>
   <CONSTANTS>
     <N>1</N>
-    <x_0>0</x_0>
-    <sigma_x>0.35</sigma_x>
+    <x_0>-500</x_0>
+    <sigma_x>0.7</sigma_x>
     <sigma_y>1</sigma_y>
     <sigma_z>1</sigma_z>
     <stepsize>0.0001</stepsize>
   </CONSTANTS>
   <ALGORITHM>
-    <NX>16384</NX>
+    <NX>65536</NX>
     <NY>256</NY>
     <NZ>256</NZ>
-    <XMIN>-200</XMIN><XMAX>200</XMAX>
+    <XMIN>-1000</XMIN><XMAX>1000</XMAX>
     <YMIN>-10</YMIN><YMAX>10</YMAX> 
     <ZMIN>-10</ZMIN><ZMAX>10</ZMAX>
   </ALGORITHM>

@@ -4,7 +4,8 @@
   <FILENAME_2>0.000_2.bin</FILENAME_2>
   <FILENAME_3>0.000_2.bin</FILENAME_3>
   <CONSTANTS>
-    <b>0.000000</b>
+    <!--<b>0.00000455161042554601</b>-->
+    <b>0</b>
     <v_0>0</v_0>
     <g_0>0</g_0>
     <c_p>299792458</c_p>    
@@ -19,35 +20,13 @@
     <GS_1>0,0.000000e+0,0</GS_1>
     <GS_2>0.000000e+0,0,0</GS_2>
     <GS_3>0.000000e+0,0,0</GS_3>
-<!--    <GS_1>4.37335363379797e-17,0.000000e+0</GS_1>
-    <GS_2>0.000000e+0,4.37335363379797e-17</GS_2> -->
+
   </VCONSTANTS>
   <SEQUENCE>
-    <raman 
-    Amp_1_sm_r="13.1422249645585" Amp_1_sm_l="0" Amp_1_sp_r="0" Amp_1_sp_l="0"
-    Phi_1_sm_r="0" Phi_1_sm_l="0" Phi_1_sp_r="0" Phi_1_sp_l="0"
-    Amp_2_sm_r="13.1422249645585" Amp_2_sm_l="0" Amp_2_sp_r="0" Amp_2_sp_l="0"
-    Phi_2_sm_r="0" Phi_2_sm_l="0" Phi_2_sp_r="0" Phi_2_sp_l="0"
-    chirp_w1="0" chirp_w2="0" laser_w1="2414211878.10344" laser_w2="2414168934.52608"
-    dt="0.02" Nk="100" output_freq="last" pn_freq="each" rabi_output_freq="none"
-    >20</raman>
-    <freeprop dt="2" Nk="5000" output_freq="each" pn_freq="last">260000</freeprop>
-    <raman 
-    Amp_1_sm_r="13.1422249645585" Amp_1_sm_l="0" Amp_1_sp_r="0" Amp_1_sp_l="0"
-    Phi_1_sm_r="0" Phi_1_sm_l="0" Phi_1_sp_r="0" Phi_1_sp_l="0"
-    Amp_2_sm_r="13.1422249645585" Amp_2_sm_l="0" Amp_2_sp_r="0" Amp_2_sp_l="0"
-    Phi_2_sm_r="0" Phi_2_sm_l="0" Phi_2_sp_r="0" Phi_2_sp_l="0"
-    chirp_w1="0" chirp_w2="0" laser_w1="2414211878.10344" laser_w2="2414168934.52608"
-    dt="0.02" Nk="100" output_freq="last" pn_freq="each" rabi_output_freq="none"
-    >40</raman>
-    <freeprop dt="2" Nk="5000" output_freq="each" pn_freq="last">260000</freeprop>
-    <raman 
-    Amp_1_sm_r="13.1422249645585" Amp_1_sm_l="0" Amp_1_sp_r="0" Amp_1_sp_l="0"
-    Phi_1_sm_r="0" Phi_1_sm_l="0" Phi_1_sp_r="0" Phi_1_sp_l="0"
-    Amp_2_sm_r="13.1422249645585" Amp_2_sm_l="0" Amp_2_sp_r="0" Amp_2_sp_l="0"
-    Phi_2_sm_r="0" Phi_2_sm_l="0" Phi_2_sp_r="0" Phi_2_sp_l="0"
-    chirp_w1="0" chirp_w2="0" laser_w1="2414211878.10344" laser_w2="2414168934.52608"
-    dt="0.02" Nk="100" output_freq="last" pn_freq="each" rabi_output_freq="none"
-    >20</raman>
+    <raman Amp_1_sm_l="0" Amp_1_sm_r="13.1422249645585" Amp_1_sp_l="0" Amp_1_sp_r="0" Amp_2_sm_l="13.1422249645585" Amp_2_sm_r="0" Amp_2_sp_l="0" Amp_2_sp_r="0" Nk="50" Phi_1_sm_l="0" Phi_1_sm_r="0" Phi_1_sp_l="0" Phi_1_sp_r="0" Phi_2_sm_l="0" Phi_2_sm_r="0" Phi_2_sp_l="0" Phi_2_sp_r="0" chirp_w1="0" chirp_w2="0" dt="0.02" laser_w1="2414211878.10344" laser_w2="2414168934.43131" output_freq="last" pn_freq="each" rabi_output_freq="none">20</raman>
+    <freeprop Nk="500" dt="2" output_freq="each" pn_freq="last">2000</freeprop>
+    <raman Amp_1_sm_l="0" Amp_1_sm_r="13.1422249645585" Amp_1_sp_l="0" Amp_1_sp_r="0" Amp_2_sm_l="13.1422249645585" Amp_2_sm_r="0" Amp_2_sp_l="0" Amp_2_sp_r="0" Nk="50" Phi_1_sm_l="0" Phi_1_sm_r="0" Phi_1_sp_l="0" Phi_1_sp_r="0" Phi_2_sm_l="0" Phi_2_sm_r="0" Phi_2_sp_l="0" Phi_2_sp_r="0" chirp_w1="0" chirp_w2="0" dt="0.02" laser_w1="2414211878.10344" laser_w2="2414168934.24176" output_freq="last" pn_freq="each" rabi_output_freq="none">20</raman>
+    <freeprop Nk="500" dt="2" output_freq="each" pn_freq="last">2000</freeprop>
   </SEQUENCE>
 </SIMULATION>
+
