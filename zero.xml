@@ -8,10 +8,10 @@
      <N>1</N>
   </CONSTANTS>
   <ALGORITHM>
-    <NX>65536</NX>
+    <NX>131072</NX>
     <NY>256</NY>
     <NZ>256</NZ>
-    <XMIN>-1000</XMIN><XMAX>1000</XMAX>
+    <XMIN>-1000</XMIN><XMAX>4500</XMAX>
     <YMIN>-10</YMIN><YMAX>10</YMAX> 
     <ZMIN>-10</ZMIN><ZMAX>10</ZMAX>
   </ALGORITHM>
