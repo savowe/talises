@@ -451,6 +451,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
   //tmp !!
   // absorption of wavefuntion at boundaries
   // can be commented out if necessary
+  /*
   for ( int k=0; k<no_int_states; k++ )
   {
 	  for ( int m=0; m<1000; m++ )
@@ -461,7 +462,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
 		  Psi[k][this->m_no_of_pts-m][0] = Psi[k][this->m_no_of_pts-m][0] * pow(sin(M_PI/2/1000*m),2);
 		  Psi[k][this->m_no_of_pts-m][1] = Psi[k][this->m_no_of_pts-m][1] * pow(sin(M_PI/2/1000*m),2);
 	  }
-  }
+  } */
 }
 
 /** Solves the potential part in the presence of light fields with a numerical method
