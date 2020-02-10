@@ -451,6 +451,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
   //tmp !!
   // absorption of wavefuntion at boundaries
   // can be commented out if necessary
+  /*
   for ( int k=0; k<no_int_states; k++ )
   {
 	  for ( int m=0; m<1000; m++ )
@@ -461,7 +462,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
 		  Psi[k][this->m_no_of_pts-m][0] = Psi[k][this->m_no_of_pts-m][0] * pow(sin(M_PI/2/1000*m),2);
 		  Psi[k][this->m_no_of_pts-m][1] = Psi[k][this->m_no_of_pts-m][1] * pow(sin(M_PI/2/1000*m),2);
 	  }
-  }
+  } */
 }
 
 /** Solves the potential part in the presence of light fields with a numerical method
@@ -587,15 +588,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     const double dt = -m_header.dt;
     const double t1 = this->Get_t();
 
-    std::array<double,2> laser_k_tmp, laser_w_tmp;
-    const double d_02_sm = -sqrt(5.0/24.0);
-    const double d_03_sp = sqrt(5.0/24.0);
-    const double d_12_sm = sqrt(1.0/120.0);
-    const double d_13_sp = sqrt(1.0/120.0);
-    const double d_04_sm = sqrt(1.0/8.0);
-    const double d_05_sp = sqrt(1.0/8.0);
-    const double d_14_sm = -sqrt(1.0/8.0);
-    const double d_15_sp = sqrt(1.0/8.0);
+    std::array<double,2> laser_k_tmp, laser_w_tmp, z_R, waist_0, z_0, GaussAmp, R_c, Phase_c, waist, gouy;
 
     vector<fftw_complex *> Psi;
     for ( int i=0; i<no_int_states; i++ )
@@ -610,20 +603,30 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
 
     double phi[no_int_states], re1, re2, im1, im2, eta[2];
-    double tmp_cos_pos, tmp_cos_pos_cc, tmp_cos_neg, tmp_cos_neg_cc;
     CPoint<dim> x;
     std::array<double,2> chirp_alpha = this->chirp_alpha;
     double doppler_beta = v_0/c_p + (g_0*t1)/c_p;
 
+    // Correction for chirp
     laser_w_tmp[0] = laser_w[0]+chirp_alpha[0]*t1;
     laser_k_tmp[0] = laser_w[0]/c_p;
     laser_w_tmp[1] = laser_w[1]+chirp_alpha[1]*t1;
     laser_k_tmp[1] = laser_w[1]/c_p;
+    // -------------------
 
-    double laser_domh_tmp = laser_w_tmp[0]-laser_w_tmp[1];
+    // Gauss Beam Parameter
+    z_0[0] = 0;
+    z_0[1] = 0;
+    waist_0[0] = 7; // std::numeric_limits<float>::max() for plane waves
+    waist_0[1] = 7;
+    z_R[0] = laser_k_tmp[0]/2 * pow(waist_0[0],2);
+    z_R[1] = laser_k_tmp[1]/2 * pow(waist_0[1],2);
+    // -------------------
 
+    // Main Diagonal of Hamiltonian in Rotating Frame
     DeltaL[0] = laser_w_tmp[0]-omega_ig;
     DeltaL[1] = laser_w_tmp[1]-omega_ie;
+    // -------------------
 
     #pragma omp for
     for ( int l=0; l<this->m_no_of_pts; l++ )
@@ -647,29 +650,57 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
         gsl_matrix_complex_set(A,i,i, {phi[i],0});
       }
 
+      // 2D Gauss Amplitude x[0] is z-axis and x[1] is y-axis also called radius
+      waist[0] = waist_0[0] * sqrt( 1 + pow((x[0]-z_0[0])/z_R[0], 2) );
+      waist[1] = waist_0[1] * sqrt( 1 + pow((x[0]-z_0[0])/z_R[1], 2) );
+      R_c[0] = (x[0]-z_0[0]) * ( 1 + pow(z_R[0]/(x[0]-z_0[0]),2) );
+      R_c[1] = (x[0]-z_0[1]) * ( 1 + pow(z_R[1]/(x[0]-z_0[1]),2) );
+      // The Radius of curvature can be infinite. This is catched here
+      if (R_c[0] != R_c[0]) {
+    	  R_c[0] = std::numeric_limits<float>::max();
+      }
+      if (R_c[1] != R_c[1]) {
+    	  R_c[1] = std::numeric_limits<float>::max();
+      }
+      //-----------------------------------
+      Phase_c[0] = pow(x[1],2)/(2*R_c[0]);
+      Phase_c[1] = pow(x[1],2)/(2*R_c[1]);
+
+      gouy[0] = atan( (x[0]-z_0[0])/z_R[0] );
+      gouy[1] = atan( (x[0]-z_0[0])/z_R[1] );
+
+      GaussAmp[0] = waist_0[0] / waist[0] * exp( - pow(x[1]/waist[0],2) );
+      GaussAmp[1] = waist_0[1] / waist[1] * exp( - pow(x[1]/waist[1],2) );
+
+      //---------------------------------------------
+
       //Raman
       //---------------------------------------------
 
-      sincos(laser_k_tmp[0] * x[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1 - Phi_1_sm[0], &im1, &re1 ); // For right going light
-      sincos(laser_k_tmp[0] * x[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1 - Phi_1_sm[1], &im2, &re2 ); // For left going light
+      sincos(laser_k_tmp[0] * (x[0] + Phase_c[0] ) * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1 - Phi_1_sm[0] - gouy[0], &im1, &re1 ); // For right going light
+      sincos(laser_k_tmp[0] * (x[0] + Phase_c[0] ) * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1 - Phi_1_sm[1] - gouy[0], &im2, &re2 ); // For left going light
 
       //---------------------------------------------
 
       eta[0] = re1 * Amp_1_sm[0] + re2 * Amp_1_sm[1];
+      eta[0] *= GaussAmp[0];
       eta[1] = im1 * Amp_1_sm[0] + im2 * Amp_1_sm[1];
+      eta[1] *= GaussAmp[0];
 
       gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
 
       //---------------------------------------------
 
-      sincos(laser_k_tmp[1] * x[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1 - Phi_2_sm[0], &im1, &re1 );
-      sincos(laser_k_tmp[1] * x[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1 - Phi_2_sm[1], &im2, &re2 );
+      sincos(laser_k_tmp[1] * (x[0] + Phase_c[1] ) * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1 - Phi_2_sm[0] - gouy[1], &im1, &re1 );
+      sincos(laser_k_tmp[1] * (x[0] + Phase_c[1] ) * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1 - Phi_2_sm[1] - gouy[1], &im2, &re2 );
 
       //---------------------------------------------
 
       eta[0] = re1 * Amp_2_sm[0] + re2 * Amp_2_sm[1];
+      eta[0] *= GaussAmp[1];
       eta[1] = im1 * Amp_2_sm[0] + im2 * Amp_2_sm[1];
+      eta[0] *= GaussAmp[1];
 
       gsl_matrix_complex_set(A,1,2, {eta[0],eta[1]});
       gsl_matrix_complex_set(A,2,1, {eta[0],-eta[1]});
