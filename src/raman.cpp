@@ -36,8 +36,8 @@ using namespace std;
 
 namespace RT_Solver
 {
-  template<class T, int dim>
-  class Raman_single : public CRT_Base_IF<T,dim,3> //TODO number of internal states sollte erkannt werden.
+  template<class T, int dim, int internal_dim>
+  class Raman_single : public CRT_Base_IF<T,dim,internal_dim> //TODO number of internal states sollte erkannt werden.
   {
   public:
     Raman_single( ParameterHandler * );
@@ -47,13 +47,13 @@ namespace RT_Solver
     bool run_custom_sequence( const sequence_item & );
   };
 
-  template<class T, int dim>
-  Raman_single<T,dim>::Raman_single( ParameterHandler *p ) : CRT_Base_IF<T,dim,3>( p )
+  template<class T, int dim, int internal_dim>
+  Raman_single<T,dim,internal_dim>::Raman_single( ParameterHandler *p ) : CRT_Base_IF<T,dim,internal_dim>( p )
   {
   }
 
-  template<class T, int dim>
-  bool Raman_single<T,dim>::run_custom_sequence( const sequence_item &item )
+  template<class T, int dim, int internal_dim>
+  bool Raman_single<T,dim,internal_dim>::run_custom_sequence( const sequence_item &item )
   {
     // return true if a custom sequence is found or else
     return false;
@@ -70,11 +70,14 @@ int main( int argc, char *argv[] )
 
   ParameterHandler params(argv[1]);
   int dim=0;
+  int internal_dim = 0;
 
   try
   {
     std::string tmp = params.Get_simulation("DIM");
     dim = std::stod(tmp);
+    tmp = params.Get_simulation("INTERNAL_DIM");
+    internal_dim = std::stod(tmp);
   }
   catch (mu::Parser::exception_type &e)
   {
@@ -98,17 +101,17 @@ int main( int argc, char *argv[] )
   {
     if ( dim == 1 )
     {
-      RT_Solver::Raman_single<Fourier::cft_1d,1> rtsol( &params );
+      RT_Solver::Raman_single<Fourier::cft_1d,1,3> rtsol( &params );
       rtsol.run_sequence();
     }
     else if ( dim == 2 )
     {
-      RT_Solver::Raman_single<Fourier::cft_2d,2> rtsol( &params );
+      RT_Solver::Raman_single<Fourier::cft_2d,2,3> rtsol( &params );
       rtsol.run_sequence();
     }
     else if ( dim == 3 )
     {
-      RT_Solver::Raman_single<Fourier::cft_3d,3> rtsol( &params );
+      RT_Solver::Raman_single<Fourier::cft_3d,3,3> rtsol( &params );
       rtsol.run_sequence();
     }
     else

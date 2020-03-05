@@ -7,6 +7,7 @@
 #include <iostream>
 #include <algorithm>
 
+
 extern double sign( double );
 extern double Heaviside( double );
 extern double rect( double, double, double );
@@ -60,12 +61,45 @@ void ParameterHandler::populate_sequence()
 
     sequence_item item;
 
+    int internal_dim;
+    std::string tmp_str;
+    try
+    {
+    tmp_str = node.parent().parent().child_value("INTERNAL_DIM");
+    internal_dim = std::stoi(tmp_str);
+    std::cout << "Number of internal degrees of freedom: " << tmp_str << "\n";
+    }
+    catch (const std::invalid_argument &ia)
+    {
+    	std::cerr << "Error Parsing xml file: Unable to find INTERNAL_DIM\n";
+    }
+
     item.name = node.node().name();
     item.content = node.node().child_value();
 
     item.dt = node.node().attribute("dt").as_double(0.001);
     item.Nk =  node.node().attribute("Nk").as_int(100);;
     item.comp = node.node().attribute("comp").as_int(0);
+
+    for (int i=1; i < internal_dim+1; i++)
+    {
+    	for (int j=i; j< internal_dim+1; j++)
+    	{
+    		char indices [20]; //with buffer
+    		char H_real [] = "H_ij_real";
+    		char H_imag [] = "H_ij_imag";
+    		std::sprintf(indices, "%d%d", i, j);
+    		H_real[2] = indices[0];
+    		H_real[3] = indices[1];
+    		H_imag[2] = indices[0];
+    		H_imag[3] = indices[1];
+    		const char *char_H_real = H_real;
+    		const char *char_H_imag = H_imag; //TODO exception catchen!
+
+			item.H_real.push_back(node.node().attribute(char_H_real).as_string()) ;
+			item.H_imag.push_back(node.node().attribute(char_H_imag).as_string()) ;
+    	}
+    }
 
     item.chirp_w1 = node.node().attribute("chirp_w1").as_double(0.00);
     item.chirp_w2 = node.node().attribute("chirp_w2").as_double(0.00);

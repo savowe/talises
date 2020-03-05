@@ -16,10 +16,10 @@
     <stepsize>0.0001</stepsize>
   </CONSTANTS>
   <ALGORITHM>
-    <NX>131072</NX>
-    <NY>256</NY>
-    <NZ>256</NZ>
-    <XMIN>-1000</XMIN><XMAX>4500</XMAX>
+    <NX>128</NX>
+    <NY>128</NY>
+    <NZ>128</NZ>
+    <XMIN>-10</XMIN><XMAX>10</XMAX>
     <YMIN>-10</YMIN><YMAX>10</YMAX> 
     <ZMIN>-10</ZMIN><ZMAX>10</ZMAX>
   </ALGORITHM>

@@ -84,6 +84,8 @@ protected:
 
   bool amp_is_t;
 
+  mu::Parser* parser;
+
   static void Do_NL_Step_Wrapper(void *,sequence_item &);
   static void Numerical_Bragg_Wrapper(void *,sequence_item &);
   static void Numerical_Raman_Wrapper(void *,sequence_item &);
@@ -451,17 +453,17 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
   //tmp !!
   // absorption of wavefuntion at boundaries
   // can be commented out if necessary
-  for ( int k=0; k<no_int_states; k++ )
-  {
-	  for ( int m=0; m<1000; m++ )
-	  {
-		  Psi[k][0+m][0] = Psi[k][0+m][0] * pow(sin(M_PI/2/1000*m),2);
-		  Psi[k][0+m][1] = Psi[k][0+m][1] * pow(sin(M_PI/2/1000*m),2);
+  // for ( int k=0; k<no_int_states; k++ )
+  // {
+  //   for ( int m=0; m<1000; m++ )
+  //   {
+  // 		  Psi[k][0+m][0] = Psi[k][0+m][0] * pow(sin(M_PI/2/1000*m),2);
+  // 		  Psi[k][0+m][1] = Psi[k][0+m][1] * pow(sin(M_PI/2/1000*m),2);
 
-		  Psi[k][this->m_no_of_pts-m][0] = Psi[k][this->m_no_of_pts-m][0] * pow(sin(M_PI/2/1000*m),2);
-		  Psi[k][this->m_no_of_pts-m][1] = Psi[k][this->m_no_of_pts-m][1] * pow(sin(M_PI/2/1000*m),2);
-	  }
-  }
+  // 	  Psi[k][this->m_no_of_pts-m][0] = Psi[k][this->m_no_of_pts-m][0] * pow(sin(M_PI/2/1000*m),2);
+  // 	  Psi[k][this->m_no_of_pts-m][1] = Psi[k][this->m_no_of_pts-m][1] * pow(sin(M_PI/2/1000*m),2);
+  //   }
+  // }
 }
 
 /** Solves the potential part in the presence of light fields with a numerical method
@@ -812,6 +814,9 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     this->Phi_2_sp[0] = seq.Phi_2_sp_r;
     this->Amp_2_sp[1] = seq.Amp_2_sp_l;
     this->Phi_2_sp[1] = seq.Phi_2_sp_l;
+
+    this->parser = new mu::Parser; // Parser in heap
+
 
     std::cout << "FYI: started new sequence " << seq.name << "\n";
     std::cout << "FYI: sequence no : " << seq_counter << "\n";

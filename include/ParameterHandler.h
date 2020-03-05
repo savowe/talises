@@ -18,6 +18,13 @@ struct sequence_item
 {
   std::string name; ///< sequence identifier
   std::string content;
+  std::string H_12_real;
+  std::string H_12_imag;
+  std::string H_13_real;
+  std::string H_13_imag;
+  std::vector<std::string> H_real;
+  std::vector<std::string> H_imag;
+  //std::string H;
   std::vector<double> duration; ///< duration of the sequence
   double dt; ///< dt for this sequence
   double chirp_w1;
