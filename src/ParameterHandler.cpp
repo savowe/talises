@@ -94,7 +94,7 @@ void ParameterHandler::populate_sequence()
     		H_imag[2] = indices[0];
     		H_imag[3] = indices[1];
     		const char *char_H_real = H_real;
-    		const char *char_H_imag = H_imag; //TODO exception catchen!
+    		const char *char_H_imag = H_imag;
 
     		if (node.node().attribute(char_H_real).as_string()=="")
     		{
