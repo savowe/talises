@@ -84,7 +84,8 @@ protected:
 
   bool amp_is_t;
 
-  mu::Parser* parser;
+  mu::Parser* H_real_parser;
+  mu::Parser* H_imag_parser;
 
   static void Do_NL_Step_Wrapper(void *,sequence_item &);
   static void Numerical_Bragg_Wrapper(void *,sequence_item &);
@@ -738,7 +739,7 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
   int nrm = m_rabi_momentum_list.size();
   if ( nrm == 0 )
   {
-    std::cerr << "WARNING: Rabi momentum list is empty. Cannot compute rabi frquencies." << endl;
+    //std::cerr << "WARNING: Rabi momentum list is empty. Cannot compute rabi frquencies." << endl;
   }
 
   try
@@ -791,7 +792,7 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int Nk = seq.Nk;
     int Na = subN / seq.Nk;
 
-	this->laser_w[0] = seq.laser_w1;
+	this->laser_w[0] = seq.laser_w1; //TODO cleanup
 	this->laser_w[1] = seq.laser_w2;
 	this->chirp_alpha[0] = seq.chirp_w1;
 	this->chirp_alpha[1] = seq.chirp_w2;
@@ -815,7 +816,30 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     this->Amp_2_sp[1] = seq.Amp_2_sp_l;
     this->Phi_2_sp[1] = seq.Phi_2_sp_l;
 
-    this->parser = new mu::Parser; // Parser in heap
+    this->H_real_parser = new mu::Parser; // Parser in heap
+    this->H_imag_parser = new mu::Parser;
+    std::string H_real_expression = "";
+    std::string H_imag_expression = "";
+    H_real_expression += seq.H_real[0];
+    H_imag_expression += seq.H_imag[0];
+    for (int i = 1; i<seq.H_real.size(); i++)
+    {
+    	H_real_expression += ",";
+    	H_real_expression += seq.H_real[i];
+    	H_imag_expression += ",";
+    	H_imag_expression += seq.H_imag[i];
+    }
+    this->H_real_parser->DefineConst("pi", (double)M_PI);
+    this->H_real_parser->DefineConst("e", (double)M_E);
+    this->H_imag_parser->DefineConst("pi", (double)M_PI);
+    this->H_imag_parser->DefineConst("e", (double)M_E);
+
+    this->H_real_parser->SetExpr(H_real_expression);
+    this->H_imag_parser->SetExpr(H_imag_expression);
+    //int nNum = this->H_real_parser->GetNumResults();
+    //double *v = this->H_real_parser->Eval(nNum);
+    //double v2 = *(v+1);
+
 
 
     std::cout << "FYI: started new sequence " << seq.name << "\n";

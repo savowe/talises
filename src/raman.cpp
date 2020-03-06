@@ -97,7 +97,7 @@ int main( int argc, char *argv[] )
   fftw_plan_with_nthreads( no_of_threads );
   omp_set_num_threads( no_of_threads );
 
-  try
+  try //TODO hardcode more options for internal levels lol
   {
     if ( dim == 1 )
     {
