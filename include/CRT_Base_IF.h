@@ -591,14 +591,6 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     const double t1 = this->Get_t();
 
     std::array<double,2> laser_k_tmp, laser_w_tmp;
-    const double d_02_sm = -sqrt(5.0/24.0);
-    const double d_03_sp = sqrt(5.0/24.0);
-    const double d_12_sm = sqrt(1.0/120.0);
-    const double d_13_sp = sqrt(1.0/120.0);
-    const double d_04_sm = sqrt(1.0/8.0);
-    const double d_05_sp = sqrt(1.0/8.0);
-    const double d_14_sm = -sqrt(1.0/8.0);
-    const double d_15_sp = sqrt(1.0/8.0);
 
     vector<fftw_complex *> Psi;
     for ( int i=0; i<no_int_states; i++ )
@@ -613,8 +605,22 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
 
     double phi[no_int_states], re1, re2, im1, im2, eta[2];
-    double tmp_cos_pos, tmp_cos_pos_cc, tmp_cos_neg, tmp_cos_neg_cc;
+    double tmp_cos_pos, tmp_cos_pos_cc, tmp_cos_neg;
     CPoint<dim> x;
+    this->H_real_parser->DefineVar("x", &x[0]);
+    this->H_imag_parser->DefineVar("x", &x[0]);
+    this->H_real_parser->DefineVar("t", &this->Get_t());
+    this->H_imag_parser->DefineVar("t", &this->Get_t());
+
+    double v2;
+    int nNum = this->H_real_parser->GetNumResults();
+    double *H_real_ptr = this->H_real_parser->Eval(nNum);
+    double *H_imag_ptr = this->H_imag_parser->Eval(nNum);
+    for (int i=0; i<nNum; i++)
+    {
+		v2 = *(v+i);
+    }
+
     std::array<double,2> chirp_alpha = this->chirp_alpha;
     double doppler_beta = v_0/c_p + (g_0*t1)/c_p;
 
@@ -622,8 +628,6 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     laser_k_tmp[0] = laser_w[0]/c_p;
     laser_w_tmp[1] = laser_w[1]+chirp_alpha[1]*t1;
     laser_k_tmp[1] = laser_w[1]/c_p;
-
-    double laser_domh_tmp = laser_w_tmp[0]-laser_w_tmp[1];
 
     DeltaL[0] = laser_w_tmp[0]-omega_ig;
     DeltaL[1] = laser_w_tmp[1]-omega_ie;
@@ -633,6 +637,27 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     {
       gsl_matrix_complex_set_zero(A);
       gsl_matrix_complex_set_zero(B);
+
+      int m = 0;
+      // set matrix elements for diagonal states
+      for ( int i=0; i<no_int_states; i++ ) //TODO correct indexing
+      {
+    	  m += i*no_int_states
+    	  double H_real = *(H_real_ptr+(no_int_states));
+    	  double H_imag = *(H_imag_ptr+i);
+    	  gsl_matrix_complex_set(A,i,i, {H_real,0});
+      }
+      for ( int i=0; i<no_int_states; i++ )
+      {
+    	  int k = 0;
+          for ( int j=i; i<no_int_states; i++ )
+          {
+
+    	  gsl_matrix_complex_set(A,i,j, {H_real,H_imag});
+    	  gsl_matrix_complex_set(A,j,i, {H_real,-H_imag});
+    	  k++;
+          }
+      }
 
       //Diagonal elements + Nonlinear part: \Delta+g|\Phi|^2
       for ( int i=0; i<no_int_states; i++ )
@@ -649,6 +674,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
         phi[i] += DeltaL[i];
         gsl_matrix_complex_set(A,i,i, {phi[i],0});
       }
+
 
       //Raman
       //---------------------------------------------
@@ -850,16 +876,6 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     std::cout << "FYI: Nk          : " << Nk << "\n";
     std::cout << "FYI: Na*Nk*dt    : " << double(Na*Nk)*seq.dt << "\n";
 
-    try
-    {
-      std::cout << "FYI: Amp is      : " << m_params->Get_simulation("AMP_T") << "\n";
-      amp_is_t = true;
-    }
-    catch (std::string &str )
-    {
-      std::cout << "FYI: Amp is      : 1" << std::endl;
-      amp_is_t = false;
-    }
 
     if ( double(Na*Nk)*seq.dt != max_duration )
       std::cout << "FYI: double(Na*Nk)*seq.dt != max_duration\n";
