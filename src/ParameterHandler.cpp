@@ -96,12 +96,23 @@ void ParameterHandler::populate_sequence()
     		const char *char_H_real = H_real;
     		const char *char_H_imag = H_imag; //TODO exception catchen!
 
+    		if (node.node().attribute(char_H_real).as_string()=="")
+    		{
+    		    printf( "No parameter %s specified.\n", char_H_real );
+    		    throw;
+    		}
+    		if (node.node().attribute(char_H_imag).as_string()=="")
+    		{
+    		    printf( "No parameter %s specified.\n", char_H_real );
+    		    throw;
+    		}
+
 			item.H_real.push_back(node.node().attribute(char_H_real).as_string()) ;
 			item.H_imag.push_back(node.node().attribute(char_H_imag).as_string()) ;
     	}
     }
 
-    item.chirp_w1 = node.node().attribute("chirp_w1").as_double(0.00);
+    item.chirp_w1 = node.node().attribute("chirp_w1").as_double(0.00); //TODO cleanup
     item.chirp_w2 = node.node().attribute("chirp_w2").as_double(0.00);
     item.laser_w1 = node.node().attribute("laser_w1").as_double(0.00);
     item.laser_w2 = node.node().attribute("laser_w2").as_double(0.00);
