@@ -96,12 +96,12 @@ void ParameterHandler::populate_sequence()
     		const char *char_H_real = H_real;
     		const char *char_H_imag = H_imag;
 
-    		if (node.node().attribute(char_H_real).as_string()=="")
+    		if (std::strcmp(node.node().attribute(char_H_real).as_string(),"")==0)
     		{
     		    printf( "No parameter %s specified.\n", char_H_real );
     		    throw;
     		}
-    		if (node.node().attribute(char_H_imag).as_string()=="")
+    		if (std::strcmp(node.node().attribute(char_H_imag).as_string(),"")==0)
     		{
     		    printf( "No parameter %s specified.\n", char_H_real );
     		    throw;
