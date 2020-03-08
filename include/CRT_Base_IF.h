@@ -389,7 +389,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step_Wrapper ( void *ptr, sequence_
   * @param ptr Function pointer to be set to Numerical_Bragg()
   * @param seq Additional information about the sequence (for example file names if a file has to be read)
   */
-template <class T, int dim, int no_int_states>
+template <class T, int dim, int no_int_states> //todo cleanup
 void CRT_Base_IF<T,dim,no_int_states>::Numerical_Bragg_Wrapper ( void *ptr, sequence_item &seq )
 {
   CRT_Base_IF<T,dim,no_int_states> *self = static_cast<CRT_Base_IF<T,dim,no_int_states>*>(ptr);
@@ -473,7 +473,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
   * with the help of a numerical diagonalisation which uses the gsl library
   */
 template <class T, int dim, int no_int_states>
-void CRT_Base_IF<T,dim,no_int_states>::Numerical_Bragg()
+void CRT_Base_IF<T,dim,no_int_states>::Numerical_Bragg() //TODO cleanup
 {
   #pragma omp parallel
   {
@@ -649,13 +649,18 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       }
       for ( int i=0; i<no_int_states; i++ )
       {
-    	  int k = 0;
           for ( int j=i; i<no_int_states; i++ )
           {
-
-    	  gsl_matrix_complex_set(A,i,j, {H_real,H_imag});
-    	  gsl_matrix_complex_set(A,j,i, {H_real,-H_imag});
-    	  k++;
+            if (i != j) //nondiagonal elements
+            {
+            gsl_matrix_complex_set(A,i,j, {H_real,H_imag});
+            gsl_matrix_complex_set(A,j,i, {H_real,-H_imag});
+            }
+            else
+            { //diagonal elements
+            gsl_matrix_complex_set(A,i,i, {H_real,0});
+            }
+            
           }
       }
 
