@@ -609,28 +609,16 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     CPoint<dim> x;
     this->H_real_parser->DefineVar("x", &x[0]);
     this->H_imag_parser->DefineVar("x", &x[0]);
-    this->H_real_parser->DefineVar("t", &this->Get_t());
-    this->H_imag_parser->DefineVar("t", &this->Get_t());
 
-    double v2;
+
     int nNum = this->H_real_parser->GetNumResults();
     double *H_real_ptr = this->H_real_parser->Eval(nNum);
     double *H_imag_ptr = this->H_imag_parser->Eval(nNum);
-    for (int i=0; i<nNum; i++)
-    {
-		v2 = *(v+i);
-    }
 
-    std::array<double,2> chirp_alpha = this->chirp_alpha;
+
     double doppler_beta = v_0/c_p + (g_0*t1)/c_p;
 
-    laser_w_tmp[0] = laser_w[0]+chirp_alpha[0]*t1;
-    laser_k_tmp[0] = laser_w[0]/c_p;
-    laser_w_tmp[1] = laser_w[1]+chirp_alpha[1]*t1;
-    laser_k_tmp[1] = laser_w[1]/c_p;
 
-    DeltaL[0] = laser_w_tmp[0]-omega_ig;
-    DeltaL[1] = laser_w_tmp[1]-omega_ie;
 
     #pragma omp for
     for ( int l=0; l<this->m_no_of_pts; l++ )
@@ -639,28 +627,22 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       gsl_matrix_complex_set_zero(B);
 
       int m = 0;
-      // set matrix elements for diagonal states
-      for ( int i=0; i<no_int_states; i++ ) //TODO correct indexing
-      {
-    	  m += i*no_int_states
-    	  double H_real = *(H_real_ptr+(no_int_states));
-    	  double H_imag = *(H_imag_ptr+i);
-    	  gsl_matrix_complex_set(A,i,i, {H_real,0});
-      }
       for ( int i=0; i<no_int_states; i++ )
       {
           for ( int j=i; i<no_int_states; i++ )
           {
+        	  double H_real = *(H_real_ptr+m);
+        	  double H_imag = *(H_imag_ptr+m);
             if (i != j) //nondiagonal elements
             {
-            gsl_matrix_complex_set(A,i,j, {H_real,H_imag});
-            gsl_matrix_complex_set(A,j,i, {H_real,-H_imag});
+				gsl_matrix_complex_set(A,i,j, {H_real,H_imag});
+				gsl_matrix_complex_set(A,j,i, {H_real,H_imag});
             }
             else
             { //diagonal elements
-            gsl_matrix_complex_set(A,i,i, {H_real,0});
+				gsl_matrix_complex_set(A,i,i, {H_real,0});
             }
-            
+            m += 1;
           }
       }
 
@@ -823,29 +805,6 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int Nk = seq.Nk;
     int Na = subN / seq.Nk;
 
-	this->laser_w[0] = seq.laser_w1; //TODO cleanup
-	this->laser_w[1] = seq.laser_w2;
-	this->chirp_alpha[0] = seq.chirp_w1;
-	this->chirp_alpha[1] = seq.chirp_w2;
-	this->laser_k[0] = this->laser_w[0]/this->c_p;
-	this->laser_k[1] = this->laser_w[1]/this->c_p;
-    this->Amp_1_sm[0] = seq.Amp_1_sm_r;
-    this->Phi_1_sm[0] = seq.Phi_1_sm_r;
-    this->Amp_1_sm[1] = seq.Amp_1_sm_l;
-    this->Phi_1_sm[1] = seq.Phi_1_sm_l;
-    this->Amp_2_sm[0] = seq.Amp_2_sm_r;
-    this->Phi_2_sm[0] = seq.Phi_2_sm_r;
-    this->Amp_2_sm[1] = seq.Amp_2_sm_l;
-    this->Phi_2_sm[1] = seq.Phi_2_sm_l;
-
-    this->Amp_1_sp[0] = seq.Amp_1_sp_r;
-    this->Phi_1_sp[0] = seq.Phi_1_sp_r;
-    this->Amp_1_sp[1] = seq.Amp_1_sp_l;
-    this->Phi_1_sp[1] = seq.Phi_1_sp_l;
-    this->Amp_2_sp[0] = seq.Amp_2_sp_r;
-    this->Phi_2_sp[0] = seq.Phi_2_sp_r;
-    this->Amp_2_sp[1] = seq.Amp_2_sp_l;
-    this->Phi_2_sp[1] = seq.Phi_2_sp_l;
 
     this->H_real_parser = new mu::Parser; // Parser in heap
     this->H_imag_parser = new mu::Parser;
@@ -867,9 +826,9 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
 
     this->H_real_parser->SetExpr(H_real_expression);
     this->H_imag_parser->SetExpr(H_imag_expression);
-    //int nNum = this->H_real_parser->GetNumResults();
-    //double *v = this->H_real_parser->Eval(nNum);
-    //double v2 = *(v+1);
+
+    this->H_real_parser->DefineVar("t", &this->Get_t());
+    this->H_imag_parser->DefineVar("t", &this->Get_t());
 
 
 
