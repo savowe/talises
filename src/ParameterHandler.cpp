@@ -113,9 +113,6 @@ void ParameterHandler::populate_sequence()
     }
 
 
-
-
-
     tmpstr = node.node().attribute("output_freq").as_string("none");
     item.output_freq = m_map_freq[tmpstr];
     tmpstr = node.node().attribute("rabi_output_freq").as_string("none");
@@ -245,18 +242,6 @@ void ParameterHandler::populate_vconstants()
     }
     m_map_vconstants.insert ( std::pair<std::string,std::vector<double>>(str,data) );
   }
-
-  /*
-  for( auto it1 : m_map_vconstants )
-  {
-    std::cout << it1.first << "\t";
-    for( auto it2 : it1.second )
-    {
-      std::cout << it2 << "\t";
-    }
-    std::cout << std::endl;
-  }
-  */
 }
 
 // See populate_constants

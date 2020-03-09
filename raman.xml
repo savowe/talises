@@ -27,9 +27,9 @@
 <!--    <freeprop Nk="1000" dt="2" output_freq="each" pn_freq="seach">20000</freeprop>-->
 
     <raman Amp_1_sm_l="0" Amp_1_sm_r="13.1422249645585" Amp_1_sp_l="0" Amp_1_sp_r="0" Amp_2_sm_l="13.1422249645585" Amp_2_sm_r="0" Amp_2_sp_l="0" Amp_2_sp_r="0" Nk="500" Phi_1_sm_l="0" Phi_1_sm_r="0" Phi_1_sp_l="0" Phi_1_sp_r="0" Phi_2_sm_l="0" Phi_2_sm_r="0" Phi_2_sp_l="0" Phi_2_sp_r="0" chirp_w1="0" chirp_w2="0" dt="0.02" laser_w1="2414211878.10344" laser_w2="2414168934.43131" output_freq="each" pn_freq="each" rabi_output_freq="none"
-H_11_real="0.02353452354" H_11_imag="0.0 " 	H_12_real="3*cos(pi)" H_12_imag="3*sin(pi)" 	H_13_real="3*cos(pi)" H_13_imag="3*sin(pi)"
-						H_22_real="1" H_22_imag="0"			H_23_real="0" H_23_imag="0"
-												H_33_real="2.2" H_33_imag="0"
+H_11_real="0" H_11_imag="0" 			H_12_real="0" H_12_imag="0" 			H_13_real="1/2*cos(5*t)" H_13_imag="-1/2*sin(5*t)"
+						H_22_real="0" H_22_imag="0"			H_23_real="1/2*cos(5*t+0)" H_23_imag="-1/2*sin(5*t+0)"
+												H_33_real="0" H_33_imag="0"
 >20</raman>
 
   </SEQUENCE>

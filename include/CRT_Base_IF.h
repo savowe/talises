@@ -84,8 +84,7 @@ protected:
 
   bool amp_is_t;
 
-  mu::Parser* H_real_parser;
-  mu::Parser* H_imag_parser;
+  mu::Parser* H_parser;
 
   static void Do_NL_Step_Wrapper(void *,sequence_item &);
   static void Numerical_Bragg_Wrapper(void *,sequence_item &);
@@ -451,20 +450,6 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
       Psi[i][l][1] = Psi[i][l][1]*re1 + tmp1*im1;
     }
   }
-  //tmp !!
-  // absorption of wavefuntion at boundaries
-  // can be commented out if necessary
-  // for ( int k=0; k<no_int_states; k++ )
-  // {
-  //   for ( int m=0; m<1000; m++ )
-  //   {
-  // 		  Psi[k][0+m][0] = Psi[k][0+m][0] * pow(sin(M_PI/2/1000*m),2);
-  // 		  Psi[k][0+m][1] = Psi[k][0+m][1] * pow(sin(M_PI/2/1000*m),2);
-
-  // 	  Psi[k][this->m_no_of_pts-m][0] = Psi[k][this->m_no_of_pts-m][0] * pow(sin(M_PI/2/1000*m),2);
-  // 	  Psi[k][this->m_no_of_pts-m][1] = Psi[k][this->m_no_of_pts-m][1] * pow(sin(M_PI/2/1000*m),2);
-  //   }
-  // }
 }
 
 /** Solves the potential part in the presence of light fields with a numerical method
@@ -605,20 +590,15 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
 
     double phi[no_int_states], re1, re2, im1, im2, eta[2];
-    double tmp_cos_pos, tmp_cos_pos_cc, tmp_cos_neg;
+
     CPoint<dim> x;
-    this->H_real_parser->DefineVar("x", &x[0]);
-    this->H_imag_parser->DefineVar("x", &x[0]);
 
+    this->H_parser->DefineVar("x", &x[0]);
 
-    int nNum = this->H_real_parser->GetNumResults();
-    double *H_real_ptr = this->H_real_parser->Eval(nNum);
-    double *H_imag_ptr = this->H_imag_parser->Eval(nNum);
-
+    int nNum = this->H_parser->GetNumResults();
+    double *H_ptr = this->H_parser->Eval(nNum);
 
     double doppler_beta = v_0/c_p + (g_0*t1)/c_p;
-
-
 
     #pragma omp for
     for ( int l=0; l<this->m_no_of_pts; l++ )
@@ -629,14 +609,14 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
       int m = 0;
       for ( int i=0; i<no_int_states; i++ )
       {
-          for ( int j=i; i<no_int_states; i++ )
+          for ( int j=i; j<no_int_states; j++ )
           {
-        	  double H_real = *(H_real_ptr+m);
-        	  double H_imag = *(H_imag_ptr+m);
+        	  double H_real = *(H_ptr+(2*m));
+        	  double H_imag = *(H_ptr+(2*m+1));
             if (i != j) //nondiagonal elements
             {
 				gsl_matrix_complex_set(A,i,j, {H_real,H_imag});
-				gsl_matrix_complex_set(A,j,i, {H_real,H_imag});
+				gsl_matrix_complex_set(A,j,i, {H_real,-H_imag});
             }
             else
             { //diagonal elements
@@ -646,6 +626,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
           }
       }
 
+      /*
       //Diagonal elements + Nonlinear part: \Delta+g|\Phi|^2
       for ( int i=0; i<no_int_states; i++ )
       {
@@ -661,36 +642,8 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
         phi[i] += DeltaL[i];
         gsl_matrix_complex_set(A,i,i, {phi[i],0});
       }
+	*/
 
-
-      //Raman
-      //---------------------------------------------
-
-      sincos(laser_k_tmp[0] * x[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[0] * t1 - Phi_1_sm[0], &im1, &re1 ); // For right going light
-      sincos(laser_k_tmp[0] * x[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[0] * t1 - Phi_1_sm[1], &im2, &re2 ); // For left going light
-
-      //---------------------------------------------
-
-      eta[0] = re1 * Amp_1_sm[0] + re2 * Amp_1_sm[1];
-      eta[1] = im1 * Amp_1_sm[0] + im2 * Amp_1_sm[1];
-
-      gsl_matrix_complex_set(A,0,2, {eta[0],eta[1]});
-      gsl_matrix_complex_set(A,2,0, {eta[0],-eta[1]});
-
-      //---------------------------------------------
-
-      sincos(laser_k_tmp[1] * x[0] * (doppler_beta - 1) - doppler_beta * laser_w_tmp[1] * t1 - Phi_2_sm[0], &im1, &re1 );
-      sincos(laser_k_tmp[1] * x[0] * (doppler_beta + 1) + doppler_beta * laser_w_tmp[1] * t1 - Phi_2_sm[1], &im2, &re2 );
-
-      //---------------------------------------------
-
-      eta[0] = re1 * Amp_2_sm[0] + re2 * Amp_2_sm[1];
-      eta[1] = im1 * Amp_2_sm[0] + im2 * Amp_2_sm[1];
-
-      gsl_matrix_complex_set(A,1,2, {eta[0],eta[1]});
-      gsl_matrix_complex_set(A,2,1, {eta[0],-eta[1]});
-
-      //--------------------------------------------
 
       //Compute Eigenvalues + Eigenvector
       gsl_eigen_hermv(A,eval,evec,w);
@@ -806,30 +759,24 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int Na = subN / seq.Nk;
 
 
-    this->H_real_parser = new mu::Parser; // Parser in heap
-    this->H_imag_parser = new mu::Parser;
-    std::string H_real_expression = "";
-    std::string H_imag_expression = "";
-    H_real_expression += seq.H_real[0];
-    H_imag_expression += seq.H_imag[0];
+    this->H_parser = new mu::Parser; // Parser in heap
+    std::string H_expression = "";
+    H_expression += seq.H_real[0];
+    H_expression += ",";
+    H_expression += seq.H_imag[0];
+
     for (int i = 1; i<seq.H_real.size(); i++)
     {
-    	H_real_expression += ",";
-    	H_real_expression += seq.H_real[i];
-    	H_imag_expression += ",";
-    	H_imag_expression += seq.H_imag[i];
+    	H_expression += ",";
+    	H_expression += seq.H_real[i];
+    	H_expression += ",";
+    	H_expression += seq.H_imag[i];
     }
-    this->H_real_parser->DefineConst("pi", (double)M_PI);
-    this->H_real_parser->DefineConst("e", (double)M_E);
-    this->H_imag_parser->DefineConst("pi", (double)M_PI);
-    this->H_imag_parser->DefineConst("e", (double)M_E);
 
-    this->H_real_parser->SetExpr(H_real_expression);
-    this->H_imag_parser->SetExpr(H_imag_expression);
-
-    this->H_real_parser->DefineVar("t", &this->Get_t());
-    this->H_imag_parser->DefineVar("t", &this->Get_t());
-
+    this->H_parser->DefineConst("pi", (double)M_PI);
+    this->H_parser->DefineConst("e", (double)M_E);
+    this->H_parser->DefineVar("t", &this->Get_t());
+    this->H_parser->SetExpr(H_expression);
 
 
     std::cout << "FYI: started new sequence " << seq.name << "\n";

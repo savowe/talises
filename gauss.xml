@@ -9,8 +9,8 @@
   <POTENTIAL_3D>0.5*x^2+0.5*y^2+0.5*z^2</POTENTIAL_3D>
   <CONSTANTS>
     <N>1</N>
-    <x_0>-1750</x_0>
-    <sigma_x>0.7</sigma_x>
+    <x_0>0</x_0>
+    <sigma_x>1</sigma_x>
     <sigma_y>1</sigma_y>
     <sigma_z>1</sigma_z>
     <stepsize>0.0001</stepsize>
