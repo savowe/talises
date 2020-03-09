@@ -67,7 +67,7 @@ void ParameterHandler::populate_sequence()
     {
     tmp_str = node.parent().parent().child_value("INTERNAL_DIM");
     internal_dim = std::stoi(tmp_str);
-    std::cout << "Number of internal degrees of freedom: " << tmp_str << "\n";
+    //std::cout << "Number of internal degrees of freedom: " << tmp_str << "\n";
     }
     catch (const std::invalid_argument &ia)
     {
@@ -81,37 +81,39 @@ void ParameterHandler::populate_sequence()
     item.Nk =  node.node().attribute("Nk").as_int(100);;
     item.comp = node.node().attribute("comp").as_int(0);
 
-    for (int i=1; i < internal_dim+1; i++)
+    if (item.name == "raman")
     {
-    	for (int j=i; j< internal_dim+1; j++)
-    	{
-    		char indices [20]; //with buffer
-    		char H_real [] = "H_ij_real";
-    		char H_imag [] = "H_ij_imag";
-    		std::sprintf(indices, "%d%d", i, j);
-    		H_real[2] = indices[0];
-    		H_real[3] = indices[1];
-    		H_imag[2] = indices[0];
-    		H_imag[3] = indices[1];
-    		const char *char_H_real = H_real;
-    		const char *char_H_imag = H_imag;
+		for (int i=1; i < internal_dim+1; i++)
+		{
+			for (int j=i; j< internal_dim+1; j++)
+			{
+				char indices [20]; //with buffer
+				char H_real [] = "H_ij_real";
+				char H_imag [] = "H_ij_imag";
+				std::sprintf(indices, "%d%d", i, j);
+				H_real[2] = indices[0];
+				H_real[3] = indices[1];
+				H_imag[2] = indices[0];
+				H_imag[3] = indices[1];
+				const char *char_H_real = H_real;
+				const char *char_H_imag = H_imag;
 
-    		if (std::strcmp(node.node().attribute(char_H_real).as_string(),"")==0)
-    		{
-    		    printf( "No parameter %s specified.\n", char_H_real );
-    		    throw;
-    		}
-    		if (std::strcmp(node.node().attribute(char_H_imag).as_string(),"")==0)
-    		{
-    		    printf( "No parameter %s specified.\n", char_H_real );
-    		    throw;
-    		}
+				if (std::strcmp(node.node().attribute(char_H_real).as_string(),"")==0)
+				{
+					printf( "No parameter %s specified.\n", char_H_real );
+					throw;
+				}
+				if (std::strcmp(node.node().attribute(char_H_imag).as_string(),"")==0)
+				{
+					printf( "No parameter %s specified.\n", char_H_real );
+					throw;
+				}
 
-			item.H_real.push_back(node.node().attribute(char_H_real).as_string()) ;
-			item.H_imag.push_back(node.node().attribute(char_H_imag).as_string()) ;
-    	}
+				item.H_real.push_back(node.node().attribute(char_H_real).as_string()) ;
+				item.H_imag.push_back(node.node().attribute(char_H_imag).as_string()) ;
+			}
+		}
     }
-
 
     tmpstr = node.node().attribute("output_freq").as_string("none");
     item.output_freq = m_map_freq[tmpstr];

@@ -410,7 +410,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman_Wrapper ( void *ptr, sequ
   * gravity.
   */
 template <class T, int dim, int no_int_states>
-void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
+void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step() //TODO modify for diagonal elements of Hamiltonian attribute
 {
   const double dt = -m_header.dt;
   double re1, im1, tmp1, phi[no_int_states];
@@ -436,7 +436,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
     	  phi[i] += this->m_gs[i+no_int_states*i]*tmp_density;
       }
       x = m_fields[0]->Get_x(l);
-      phi[i] += beta[0]*x[0]-DeltaL[i];
+      //phi[i] += beta[0]*x[0]-DeltaL[i];
       phi[i] *= dt;
     }
 
@@ -758,25 +758,27 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int Nk = seq.Nk;
     int Na = subN / seq.Nk;
 
-
-    this->H_parser = new mu::Parser; // Parser in heap
-    std::string H_expression = "";
-    H_expression += seq.H_real[0];
-    H_expression += ",";
-    H_expression += seq.H_imag[0];
-
-    for (int i = 1; i<seq.H_real.size(); i++)
+    if ( seq.name == "raman" )
     {
-    	H_expression += ",";
-    	H_expression += seq.H_real[i];
-    	H_expression += ",";
-    	H_expression += seq.H_imag[i];
-    }
+		this->H_parser = new mu::Parser; // Parser in heap
+		std::string H_expression = "";
+		H_expression += seq.H_real[0];
+		H_expression += ",";
+		H_expression += seq.H_imag[0];
 
-    this->H_parser->DefineConst("pi", (double)M_PI);
-    this->H_parser->DefineConst("e", (double)M_E);
-    this->H_parser->DefineVar("t", &this->Get_t());
-    this->H_parser->SetExpr(H_expression);
+		for (int i = 1; i<seq.H_real.size(); i++)
+		{
+			H_expression += ",";
+			H_expression += seq.H_real[i];
+			H_expression += ",";
+			H_expression += seq.H_imag[i];
+		}
+
+		this->H_parser->DefineConst("pi", (double)M_PI);
+		this->H_parser->DefineConst("e", (double)M_E);
+		this->H_parser->DefineVar("t", &this->Get_t());
+		this->H_parser->SetExpr(H_expression);
+    }
 
 
     std::cout << "FYI: started new sequence " << seq.name << "\n";
