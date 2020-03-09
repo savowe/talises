@@ -35,4 +35,4 @@ This means that our Hilbert space will be will be constituent of
 ----------------------
 ### Sources
 Shore, B. (2011). Manipulating Quantum Structures Using Laser Pulses. Cambridge: Cambridge University Press  
-![Walraven, J.T.M. (2018). Atomic Physics lectures, University of Amsterdam](https://staff.fnwi.uva.nl/j.t.m.walraven/walraven/Lectures.htm)
+[Walraven, J.T.M. (2018). Atomic Physics lectures, University of Amsterdam](https://staff.fnwi.uva.nl/j.t.m.walraven/walraven/Lectures.htm)
