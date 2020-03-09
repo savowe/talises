@@ -1,17 +1,11 @@
 <SIMULATION>
   <DIM>1</DIM>
-  <INTERNAL_DIM>3</INTERNAL_DIM>
+  <INTERNAL_DIM>2</INTERNAL_DIM>
   <FILENAME>0.000_1.bin</FILENAME>
   <FILENAME_2>0.000_2.bin</FILENAME_2>
   <FILENAME_3>0.000_2.bin</FILENAME_3>
   <CONSTANTS>
-    <!--<b>0.00000455161042554601</b>-->
     <b>0</b>
-    <v_0>0</v_0>
-    <g_0>0</g_0>
-    <c_p>299792458</c_p>    
-    <omega_ig>2414216276.33316</omega_ig>
-    <omega_ie>2414173332.75580</omega_ie>
     <rabi_threshold>4</rabi_threshold>
   </CONSTANTS>
   <VCONSTANTS>
@@ -25,11 +19,16 @@
   </VCONSTANTS>
   <SEQUENCE>
     <interact Nk="500" dt="0.02" output_freq="each" pn_freq="each" rabi_output_freq="none"
+H_11_real="0" H_11_imag="0" 			H_12_real="1/50" H_12_imag="0"
+						H_22_real="0" H_22_imag="0"	
+>50</interact>
+<!--
+    <interact Nk="500" dt="0.02" output_freq="each" pn_freq="each" rabi_output_freq="none"
 H_11_real="0" H_11_imag="0" 			H_12_real="0" H_12_imag="0" 			H_13_real="1/2*cos(5*pi*t)" H_13_imag="-1/2*sin(5*pi*t)"
 						H_22_real="0" H_22_imag="0"			H_23_real="1/2*cos(5*pi*t+0)" H_23_imag="-1/2*sin(5*pi*t+0)"
 												H_33_real="0" H_33_imag="0"
 >50</interact>
-<freeprop Nk="1000" dt="2" output_freq="each" pn_freq="seach">2000</freeprop>
+<freeprop Nk="1000" dt="2" output_freq="each" pn_freq="seach">2000</freeprop>-->
   </SEQUENCE>
 </SIMULATION>
 

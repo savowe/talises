@@ -101,18 +101,117 @@ int main( int argc, char *argv[] )
   {
     if ( dim == 1 )
     {
-      RT_Solver::Raman_single<Fourier::cft_1d,1,3> rtsol( &params );
-      rtsol.run_sequence();
+    	if (internal_dim == 2)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_1d,1,2> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 3)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_1d,1,3> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 4)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_1d,1,4> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 5)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_1d,1,5> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 6)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_1d,1,6> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 7)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_1d,1,7> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 8)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_1d,1,8> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
     }
     else if ( dim == 2 )
     {
-      RT_Solver::Raman_single<Fourier::cft_2d,2,3> rtsol( &params );
-      rtsol.run_sequence();
+    	if (internal_dim == 2)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_2d,2,2> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 3)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_2d,2,3> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 4)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_2d,2,4> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 5)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_2d,2,5> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 6)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_2d,2,6> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 7)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_2d,2,7> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 8)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_2d,2,8> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
     }
     else if ( dim == 3 )
     {
-      RT_Solver::Raman_single<Fourier::cft_3d,3,3> rtsol( &params );
-      rtsol.run_sequence();
+    	if (internal_dim == 2)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_3d,3,2> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 3)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_3d,3,3> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 4)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_3d,3,4> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 5)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_3d,3,5> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 6)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_3d,3,6> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 7)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_3d,3,7> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
+    	else if (internal_dim == 8)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_3d,3,8> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
     }
     else
     {
