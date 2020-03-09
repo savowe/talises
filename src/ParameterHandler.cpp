@@ -81,7 +81,7 @@ void ParameterHandler::populate_sequence()
     item.Nk =  node.node().attribute("Nk").as_int(100);;
     item.comp = node.node().attribute("comp").as_int(0);
 
-    if (item.name == "raman")
+    if (item.name == "interact")
     {
 		for (int i=1; i < internal_dim+1; i++)
 		{

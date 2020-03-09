@@ -41,10 +41,6 @@ using namespace std;
 /** Template class for interferometry in <B>dim</B> dimensions with <B>no_int_states</B> internal states
   *
   * In this template class functions for the interaction of a BEC with a light field are defined.
-  * The three following cases can be computed:
-  *   - Bragg beamsplitter with a numerical diagonalisation
-  *   - Double Bragg beamsplitter with a numerical diagonalisation
-  *   - Raman beamsplitter with a numerical diagonalisation
   */
 template <class T, int dim, int no_int_states>
 class CRT_Base_IF : public CRT_Base<T,dim,no_int_states>
@@ -64,35 +60,18 @@ protected:
 
   /// Gravitational potential
   CPoint<dim> beta;
-  /// Detuning. Energy difference between lasers and the excited state
-  std::array<double,no_int_states> DeltaL;
-  std::array<double,2> Amp_1_sm,  ///< Amplitude of the light fields \f$ \mu E\f$ */
-  	  Phi_1_sm,
-  	  Amp_1_sp,///< sm and sp represent left- and right-handed polarization of light
-	  Phi_1_sp,
-	  Amp_2_sm,
-	  Phi_2_sm,
-	  Amp_2_sp,
-	  Phi_2_sp,
-      laser_k, ///< Wave vector of the laser fields
-      laser_dk, ///< Difference between wave vectors
-      phase, ///< Additional phase (for example phase errors)
-      chirp_rate, ///< Chirp rate of the frequency of the laser fields
-	  chirp_alpha,
-  	  laser_w; ///< angular frequency of the lasers
-  std::array<double,no_int_states-2> omega_ij;
 
+  std::array<double,2> phase, // Additional phase (for example phase errors)
+        chirp_rate; // Chirp rate of the frequency of the laser fields
   bool amp_is_t;
 
   mu::Parser* H_parser;
 
   static void Do_NL_Step_Wrapper(void *,sequence_item &);
-  static void Numerical_Bragg_Wrapper(void *,sequence_item &);
-  static void Numerical_Raman_Wrapper(void *,sequence_item &);
+  static void Numerical_Diagonalization_Wrapper(void *,sequence_item &);
 
   void Do_NL_Step();
-  void Numerical_Bragg();
-  void Numerical_Raman();
+  void Numerical_Diagonalization();
 
   void UpdateParams();
   void Output_rabi_freq_list(string, const long long);
@@ -104,20 +83,6 @@ protected:
   /// Area around momentum states
   double m_rabi_threshold;
 
-  ///< Energy difference between the three internal states: omega_ig, omega_ie
-  double omega_ig, omega_ie;
-
-  /// Difference between the frequencies of the laser fields
-  double laser_domh;
-
-  /// moving velocity
-  double v_0;
-
-  /// constant acceleration
-  double g_0;
-
-  /// phase velocity of light
-  double c_p;
 
   /** Contains the position of the momentum states in momentum space */
   vector<CPoint<dim>> m_rabi_momentum_list;
@@ -147,8 +112,7 @@ CRT_Base_IF<T,dim,no_int_states>::CRT_Base_IF( ParameterHandler *params ) : CRT_
 {
   // Map between "freeprop" and Do_NL_Step
   this->m_map_stepfcts["freeprop"] = &Do_NL_Step_Wrapper;
-  this->m_map_stepfcts["bragg"] = &Numerical_Bragg_Wrapper;
-  this->m_map_stepfcts["raman"] = &Numerical_Raman_Wrapper;
+  this->m_map_stepfcts["interact"] = &Numerical_Diagonalization_Wrapper;
 
   UpdateParams();
 }
@@ -172,25 +136,9 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
   char s[100];
   for ( int i=0; i<dim; i++)
     beta[i] = m_params->Get_VConstant("Beta",i);
-
   try
   {
-    laser_domh = laser_w[0]-laser_w[1];
-
-    omega_ig = m_params->Get_Constant("omega_ig");
-    omega_ie = m_params->Get_Constant("omega_ie");
-    for ( int i=0; i<no_int_states-2; i++)
-    	omega_ij[i] = m_params->Get_VConstant("omega_ij",i);
-    for (int i=2; i<no_int_states; i++)
-    {
-    	DeltaL[i] = omega_ij[i-2];
-    }
-
-    v_0 = m_params->Get_Constant("v_0");
-    g_0 = m_params->Get_Constant("g_0");
-    c_p = m_params->Get_Constant("c_p");
     m_rabi_threshold = m_params->Get_Constant("rabi_threshold");
-
   }
   catch (std::string &str )
   {
@@ -384,26 +332,16 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step_Wrapper ( void *ptr, sequence_
   self->Do_NL_Step();
 }
 
-/** Wrapper function for Numerical_Bragg()
-  * @param ptr Function pointer to be set to Numerical_Bragg()
-  * @param seq Additional information about the sequence (for example file names if a file has to be read)
-  */
-template <class T, int dim, int no_int_states> //todo cleanup
-void CRT_Base_IF<T,dim,no_int_states>::Numerical_Bragg_Wrapper ( void *ptr, sequence_item &seq )
-{
-  CRT_Base_IF<T,dim,no_int_states> *self = static_cast<CRT_Base_IF<T,dim,no_int_states>*>(ptr);
-  self->Numerical_Bragg();
-}
 
-/** Wrapper function for Numerical_Raman()
-  * @param ptr Function pointer to be set to Numerical_Raman()
+/** Wrapper function for Numerical_n()
+  * @param ptr Function pointer to be set to Numerical_Diagonalization()
   * @param seq Additional information about the sequence (for example file names if a file has to be read)
   */
 template <class T, int dim, int no_int_states>
-void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman_Wrapper ( void *ptr, sequence_item &seq )
+void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization_Wrapper ( void *ptr, sequence_item &seq )
 {
   CRT_Base_IF<T,dim,no_int_states> *self = static_cast<CRT_Base_IF<T,dim,no_int_states>*>(ptr);
-  self->Numerical_Raman();
+  self->Numerical_Diagonalization();
 }
 
 /** Solves the potential part without any external fields but
@@ -452,18 +390,20 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step() //TODO modify for diagonal e
   }
 }
 
+
 /** Solves the potential part in the presence of light fields with a numerical method
   *
   * In this function \f$ \exp(V)\Psi \f$ is calculated. The matrix exponential is computed
   * with the help of a numerical diagonalisation which uses the gsl library
   */
 template <class T, int dim, int no_int_states>
-void CRT_Base_IF<T,dim,no_int_states>::Numerical_Bragg() //TODO cleanup
+void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
 {
   #pragma omp parallel
   {
     const double dt = -m_header.dt;
     const double t1 = this->Get_t();
+
 
     vector<fftw_complex *> Psi;
     for ( int i=0; i<no_int_states; i++ )
@@ -477,119 +417,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Bragg() //TODO cleanup
     gsl_vector_complex *Psi_2 = gsl_vector_complex_alloc(no_int_states);
     gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
 
-    double phi[no_int_states],re1,im1,eta[2];
-    CPoint<dim> x;
-    laser_k[1] = -laser_k[0];
-    chirp_rate[1] = -chirp_rate[0];
-
-    #pragma omp for
-    for ( int l=0; l<this->m_no_of_pts; l++ )
-    {
-      gsl_matrix_complex_set_zero(A);
-      gsl_matrix_complex_set_zero(B);
-
-      //Diagonal elements + Nonlinear part: \Delta+g|\Phi|^2+\beta*x
-      //-------------------------------------------------------------
-      for ( int i=0; i<no_int_states; i++ )
-      {
-      	double tmp_density = Psi[i][l][0]*Psi[i][l][0] + Psi[i][l][1]*Psi[i][l][1];
-      	if (tmp_density <= 0.0)
-      	{
-      		phi[i] = 0.0;
-      	} else
-      	{
-      		phi[i] = this->m_b*log( tmp_density );
-      	}
-        x = m_fields[0]->Get_x(l);
-        phi[i] += beta*x-DeltaL[i];
-        gsl_matrix_complex_set(A,i,i, {phi[i],0});
-      }
-
-      //Off diagonal elements (Bragg + Double Bragg)
-      //---------------------------------------------
-
-      for ( int i=0; i<no_int_states-1; i++ )
-      {
-        sincos(((-laser_domh+chirp_rate[i]*t1)*t1+laser_k[i]*x[0]-0.5*phase[0]), &im1, &re1 );
-
-        eta[0] = Amp_1_sm[0]*re1/2+Amp_1_sm[1]*re1/2;
-        eta[1] = Amp_1_sm[0]*im1/2-Amp_1_sm[1]*im1/2;
-
-//      sincos((0.5*laser_dk[0]), &im1, &re1);
-
-
-        gsl_matrix_complex_set(A,i+1,0, {eta[0],eta[1]});
-        gsl_matrix_complex_set(A,0,i+1, {eta[0],-eta[1]});
-      }
-
-      //-----------------------------------------
-
-      // Compute Eigenvalues and Eigenvector
-      gsl_eigen_hermv(A,eval,evec,w);
-
-      //exp(Eigenvalues)
-      for ( int i=0; i<no_int_states; i++ )
-      {
-        sincos( dt*gsl_vector_get(eval,i), &im1, &re1 );
-        gsl_matrix_complex_set(B,i,i, {re1,im1});
-      }
-
-      // H_new = Eigenvector * exp(Eigenvalues) * conjugate(Eigenvector)
-      gsl_blas_zgemm(CblasNoTrans,CblasConjTrans,GSL_COMPLEX_ONE,B,evec,GSL_COMPLEX_ZERO,A);
-      gsl_blas_zgemm(CblasNoTrans,CblasNoTrans,GSL_COMPLEX_ONE,evec,A,GSL_COMPLEX_ZERO,B);
-
-      for ( int i=0; i<no_int_states; i++)
-      {
-        gsl_vector_complex_set(Psi_1,i, {Psi[i][l][0],Psi[i][l][1]});
-      }
-
-      // H_new * Psi
-      gsl_blas_zgemv(CblasNoTrans,GSL_COMPLEX_ONE,B,Psi_1,GSL_COMPLEX_ZERO,Psi_2);
-
-      for ( int i=0; i<no_int_states; i++)
-      {
-        Psi[i][l][0] = gsl_vector_complex_get(Psi_2,i).dat[0];
-        Psi[i][l][1] = gsl_vector_complex_get(Psi_2,i).dat[1];
-      }
-    }
-    gsl_matrix_complex_free(A);
-    gsl_matrix_complex_free(B);
-    gsl_eigen_hermv_free(w);
-    gsl_vector_free(eval);
-    gsl_vector_complex_free(Psi_1);
-    gsl_vector_complex_free(Psi_2);
-    gsl_matrix_complex_free(evec);
-  }
-}
-
-/** Solves the potential part in the presence of light fields with a numerical method
-  *
-  * In this function \f$ \exp(V)\Psi \f$ is calculated. The matrix exponential is computed
-  * with the help of a numerical diagonalisation which uses the gsl library
-  */
-template <class T, int dim, int no_int_states>
-void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
-{
-  #pragma omp parallel
-  {
-    const double dt = -m_header.dt;
-    const double t1 = this->Get_t();
-
-    std::array<double,2> laser_k_tmp, laser_w_tmp;
-
-    vector<fftw_complex *> Psi;
-    for ( int i=0; i<no_int_states; i++ )
-      Psi.push_back(m_fields[i]->Getp2In());
-
-    gsl_matrix_complex *A = gsl_matrix_complex_calloc(no_int_states,no_int_states);
-    gsl_matrix_complex *B = gsl_matrix_complex_calloc(no_int_states,no_int_states);
-    gsl_eigen_hermv_workspace *w = gsl_eigen_hermv_alloc(no_int_states);
-    gsl_vector *eval = gsl_vector_alloc(no_int_states);
-    gsl_vector_complex *Psi_1 = gsl_vector_complex_alloc(no_int_states);
-    gsl_vector_complex *Psi_2 = gsl_vector_complex_alloc(no_int_states);
-    gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
-
-    double phi[no_int_states], re1, re2, im1, im2, eta[2];
+    double phi[no_int_states], re1, im1, eta[2];
 
     CPoint<dim> x;
 
@@ -598,7 +426,6 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Raman()
     int nNum = this->H_parser->GetNumResults();
     double *H_ptr = this->H_parser->Eval(nNum);
 
-    double doppler_beta = v_0/c_p + (g_0*t1)/c_p;
 
     #pragma omp for
     for ( int l=0; l<this->m_no_of_pts; l++ )
@@ -758,7 +585,7 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int Nk = seq.Nk;
     int Na = subN / seq.Nk;
 
-    if ( seq.name == "raman" )
+    if ( seq.name == "interact" )
     {
 		this->H_parser = new mu::Parser; // Parser in heap
 		std::string H_expression = "";
