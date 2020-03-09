@@ -417,7 +417,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
     gsl_vector_complex *Psi_2 = gsl_vector_complex_alloc(no_int_states);
     gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
 
-    double phi[no_int_states], re1, im1, eta[2];
+    double re1, im1;
 
     CPoint<dim> x;
 
@@ -447,7 +447,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
             }
             else
             { //diagonal elements
-				gsl_matrix_complex_set(A,i,i, {H_real,0});
+				gsl_matrix_complex_set(A,i,i, {H_real,H_imag});
             }
             m += 1;
           }

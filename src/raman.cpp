@@ -60,8 +60,7 @@ namespace RT_Solver
   }
 }
 
-int main( int argc, char *argv[] )
-{
+int main( int argc, char *argv[] ){
   if ( argc != 2 )
   {
     printf( "No parameter xml file specified.\n" );
