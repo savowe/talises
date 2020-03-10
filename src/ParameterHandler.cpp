@@ -85,7 +85,7 @@ void ParameterHandler::populate_sequence()
     {
 		for (int i=1; i < internal_dim+1; i++)
 		{
-			for (int j=i; j< internal_dim+1; j++)
+			for (int j=i; j < internal_dim+1; j++)
 			{
 				char indices [20]; //with buffer
 				char H_real [] = "H_ij_real";
