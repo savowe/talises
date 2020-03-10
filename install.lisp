@@ -176,9 +176,6 @@ Otherwise returns nil. Test is done via equal."
 (define-software fftw
     :version "3.3.8"
     :url "http://fftw.org/fftw-3.3.8.tar.gz")
-(define-software vtk
-    :version "8.1.1"
-    :url "https://www.vtk.org/files/release/8.1/VTK-8.1.1.tar.gz")
 (define-software lis
     :version "2.0.17"
     :url "http://www.ssisc.org/lis/dl/lis-2.0.17.zip")
@@ -269,23 +266,6 @@ Otherwise returns nil. Test is done via equal."
       (run (format nil "make install"))
       (export-variables full-name))))
 
-;; vtk
-(defmethod install ((sw vtk))
-  "Install method for vtk"
-  (with-slots (full-name url) sw
-    (uiop:with-current-directory
-        ((uiop:ensure-directory-pathname (remove-tgz-filetype (file-namestring url))))
-      (uiop:chdir (uiop:ensure-pathname (format nil "~abuild/" (uiop:getcwd))
-                                        :ensure-directory t :ensure-directories-exist t))
-      (run (format nil "cmake -DCMAKE_INSTALL_PREFIX=~a~a -DCMAKE_BUILD_TYPE=Release -DVTK_Group_Rendering=OFF -DVTK_RENDERING_BACKEND=None \\
-~@[-DCMAKE_C_COMPILER=~a~] ~@[-DCMAKE_CXX_COMPILER=~a~] \\
-.."
-                   *install-dir* full-name *CC* *CXX*))
-      (run "make clean")
-      (run (format nil "make ~@[-j ~a~]" *make-threads*))
-      (run "make install")
-      (export-variables full-name))))
-
 ;; lis
 (defmethod install ((sw lis))
   "Install method for gsl"
@@ -323,10 +303,7 @@ Otherwise returns nil. Test is done via equal."
       (run (format nil "cmake ~@[-DCMAKE_C_COMPILER=~a~] ~@[-DCMAKE_CXX_COMPILER=~a~] .." *CC* *CXX*))
       (run "make clean")
       (run (format nil "make ~@[-j ~a~]" *make-threads*))
-      (let ((exit-code
-             (nth-value 2 (uiop:run-program "which doxygen"
-                                            :ignore-error-status t))))
-        ))))
+        )))
 
 (defun %install-module (sw
                         &optional &key dependencies variables)
@@ -384,13 +361,10 @@ prepend-path LD_RUN_PATH     $path/lib64
 (defun display-logo ()
   ;; Banner3
   (format t "~a~%~%" "
-   ###    ######## ##     ##  ######           #######
-  ## ##      ##    ##     ## ##    ##         ##     ##
- ##   ##     ##    ##     ## ##                      ##
-##     ##    ##    ##     ##  ######  #######  #######
-#########    ##    ##     ##       ##         ##
-##     ##    ##    ##     ## ##    ##         ##
-##     ##    ##     #######   ######          #########"))
+  _   _   _   _   _   _   _   _   _   _  
+ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ 
+( r | a | m | a | n | _ | L | N | S | E )
+ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ "))
 
 (defun display-help ()
   (format t "Options:
@@ -421,8 +395,7 @@ prepend-path LD_RUN_PATH     $path/lib64
                             "g++"
                             "gfortran"
                             "make"
-                            "cmake"
-                            "doxygen")))
+                            "cmake")))
     (error "Error: Dependency missing.~%" )
     (uiop:quit)))
 
