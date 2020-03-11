@@ -9,7 +9,6 @@
     <rabi_threshold>4</rabi_threshold>
   </CONSTANTS>
   <VCONSTANTS>
-    <omega_ij>-0.0, 0.0, 986.1270845, 986.1270845</omega_ij>
     <Alpha_1>0.000365368,0.000365368,0.000365368, 0.000365368</Alpha_1>
     <Beta>0,0,0,0</Beta>
     <GS_1>0,0.000000e+0,0</GS_1>
@@ -17,18 +16,21 @@
     <GS_3>0.000000e+0,0,0</GS_3>
 
   </VCONSTANTS>
-  <SEQUENCE>
+  <SEQUENCE><!--
     <interact Nk="500" dt="0.02" output_freq="each" pn_freq="each" rabi_output_freq="none"
 H_11_real="0" H_11_imag="0" 			H_12_real="1/50" H_12_imag="0"
 						H_22_real="0" H_22_imag="0"	
 >50</interact>
-<!--
+
     <interact Nk="500" dt="0.02" output_freq="each" pn_freq="each" rabi_output_freq="none"
 H_11_real="0" H_11_imag="0" 			H_12_real="0" H_12_imag="0" 			H_13_real="1/2*cos(5*pi*t)" H_13_imag="-1/2*sin(5*pi*t)"
 						H_22_real="0" H_22_imag="0"			H_23_real="1/2*cos(5*pi*t+0)" H_23_imag="-1/2*sin(5*pi*t+0)"
 												H_33_real="0" H_33_imag="0"
->50</interact>
-<freeprop Nk="1000" dt="2" output_freq="each" pn_freq="seach">2000</freeprop>-->
+>50</interact> -->
+<freeprop Nk="1000" dt="2" output_freq="each" pn_freq="each"
+H_11_real="0" H_11_imag="0" 			H_12_real="1/50" H_12_imag="0"
+						H_22_real="0" H_22_imag="0"	
+>2000</freeprop>
   </SEQUENCE>
 </SIMULATION>
 

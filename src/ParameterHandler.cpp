@@ -67,7 +67,6 @@ void ParameterHandler::populate_sequence()
     {
     tmp_str = node.parent().parent().child_value("INTERNAL_DIM");
     internal_dim = std::stoi(tmp_str);
-    //std::cout << "Number of internal degrees of freedom: " << tmp_str << "\n";
     }
     catch (const std::invalid_argument &ia)
     {
@@ -112,6 +111,36 @@ void ParameterHandler::populate_sequence()
 				item.H_real.push_back(node.node().attribute(char_H_real).as_string()) ;
 				item.H_imag.push_back(node.node().attribute(char_H_imag).as_string()) ;
 			}
+		}
+    }
+    if (item.name == "freeprop")
+    {
+		for (int i=1; i < internal_dim+1; i++)
+		{
+			char indices [20]; //with buffer
+			char H_real [] = "H_ii_real";
+			char H_imag [] = "H_ii_imag";
+			std::sprintf(indices, "%d%d", i, i);
+			H_real[2] = indices[0];
+			H_real[3] = indices[1];
+			H_imag[2] = indices[0];
+			H_imag[3] = indices[1];
+			const char *char_H_real = H_real;
+			const char *char_H_imag = H_imag;
+
+			if (std::strcmp(node.node().attribute(char_H_real).as_string(),"")==0)
+			{
+				printf( "No parameter %s specified.\n", char_H_real );
+				throw;
+			}
+			if (std::strcmp(node.node().attribute(char_H_imag).as_string(),"")==0)
+			{
+				printf( "No parameter %s specified.\n", char_H_real );
+				throw;
+			}
+
+			item.H_real.push_back(node.node().attribute(char_H_real).as_string()) ;
+			item.H_imag.push_back(node.node().attribute(char_H_imag).as_string()) ;
 		}
     }
 

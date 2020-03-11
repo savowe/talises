@@ -585,27 +585,26 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int Nk = seq.Nk;
     int Na = subN / seq.Nk;
 
-    if ( seq.name == "interact" )
-    {
-		this->H_parser = new mu::Parser; // Parser in heap
-		std::string H_expression = "";
-		H_expression += seq.H_real[0];
+
+	this->H_parser = new mu::Parser; // Parser in heap
+	std::string H_expression = "";
+	H_expression += seq.H_real[0];
+	H_expression += ",";
+	H_expression += seq.H_imag[0];
+
+	for (int i = 1; i<seq.H_real.size(); i++)
+	{
 		H_expression += ",";
-		H_expression += seq.H_imag[0];
+		H_expression += seq.H_real[i];
+		H_expression += ",";
+		H_expression += seq.H_imag[i];
+	}
 
-		for (int i = 1; i<seq.H_real.size(); i++)
-		{
-			H_expression += ",";
-			H_expression += seq.H_real[i];
-			H_expression += ",";
-			H_expression += seq.H_imag[i];
-		}
+	this->H_parser->DefineConst("pi", (double)M_PI);
+	this->H_parser->DefineConst("e", (double)M_E);
+	this->H_parser->DefineVar("t", &this->Get_t());
+	this->H_parser->SetExpr(H_expression);
 
-		this->H_parser->DefineConst("pi", (double)M_PI);
-		this->H_parser->DefineConst("e", (double)M_E);
-		this->H_parser->DefineVar("t", &this->Get_t());
-		this->H_parser->SetExpr(H_expression);
-    }
 
 
     std::cout << "FYI: started new sequence " << seq.name << "\n";
@@ -629,7 +628,7 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     }
     catch (const std::out_of_range &oor)
     {
-      std::cerr << "Critical Error: Invalid squence name " << seq.name << "\n(" << oor.what() << ")\n";
+      std::cerr << "Critical Error: Invalid sequence name " << seq.name << "\n(" << oor.what() << ")\n";
       exit(EXIT_FAILURE);
     }
 
