@@ -402,9 +402,9 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
 {
   #pragma omp parallel
   {
+	double re1, im1;
     const double dt = -m_header.dt;
     const double t1 = this->Get_t();
-
 
     vector<fftw_complex *> Psi;
     for ( int i=0; i<no_int_states; i++ )
@@ -417,14 +417,6 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
     gsl_vector_complex *Psi_1 = gsl_vector_complex_alloc(no_int_states);
     gsl_vector_complex *Psi_2 = gsl_vector_complex_alloc(no_int_states);
     gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
-
-    double re1, im1;
-
-    //CPoint<dim> x;
-
-    //this->H_parser->DefineVar("x", &x[0]);
-    //this->H_parser->DefineVar("y", &x[1]);
-    //this->H_parser->DefineVar("z", &x[2]);
 
     int nNum = this->H_parser->GetNumResults();
 
