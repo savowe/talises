@@ -18,7 +18,7 @@
   </VCONSTANTS>
   <SEQUENCE>
     <interact Nk="500" dt="0.02" output_freq="each" pn_freq="each" rabi_output_freq="none"
-H_11_real="0" H_11_imag="0" 			H_12_real="0" H_12_imag="0" 			H_13_real="1/2*cos(5*pi*t)" H_13_imag="-1/2*sin(5*pi*t)"
+H_11_real="x^2" H_11_imag="0" 			H_12_real="0" H_12_imag="0" 			H_13_real="1/2*cos(5*pi*t)" H_13_imag="-1/2*sin(5*pi*t)"
 						H_22_real="0" H_22_imag="0"			H_23_real="1/2*cos(5*pi*t+0)" H_23_imag="-1/2*sin(5*pi*t+0)"
 												H_33_real="0" H_33_imag="0"
 >50</interact> 

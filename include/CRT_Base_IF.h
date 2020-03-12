@@ -60,6 +60,7 @@ protected:
 
   /// Gravitational potential
   CPoint<dim> beta;
+  CPoint<dim> x;
 
   std::array<double,2> phase, // Additional phase (for example phase errors)
         chirp_rate; // Chirp rate of the frequency of the laser fields
@@ -419,19 +420,22 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
 
     double re1, im1;
 
-    CPoint<dim> x;
+    //CPoint<dim> x;
 
-    this->H_parser->DefineVar("x", &x[0]);
+    //this->H_parser->DefineVar("x", &x[0]);
+    //this->H_parser->DefineVar("y", &x[1]);
+    //this->H_parser->DefineVar("z", &x[2]);
 
     int nNum = this->H_parser->GetNumResults();
-    double *H_ptr = this->H_parser->Eval(nNum);
-
 
     #pragma omp for
     for ( int l=0; l<this->m_no_of_pts; l++ )
     {
       gsl_matrix_complex_set_zero(A);
       gsl_matrix_complex_set_zero(B);
+
+      this->x = this->m_fields[0]->Get_x(l);
+      double *H_ptr = this->H_parser->Eval(nNum);
 
       int m = 0;
       for ( int i=0; i<no_int_states; i++ )
@@ -585,7 +589,6 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int Nk = seq.Nk;
     int Na = subN / seq.Nk;
 
-
 	this->H_parser = new mu::Parser; // Parser in heap
 	std::string H_expression = "";
 	H_expression += seq.H_real[0];
@@ -603,6 +606,9 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
 	this->H_parser->DefineConst("pi", (double)M_PI);
 	this->H_parser->DefineConst("e", (double)M_E);
 	this->H_parser->DefineVar("t", &this->Get_t());
+	this->H_parser->DefineVar("x", &this->x[0]);
+	if (dim >=2) {this->H_parser->DefineVar("y", &this->x[1]);}
+	if (dim == 3) {this->H_parser->DefineVar("z", &this->x[2]);}
 	this->H_parser->SetExpr(H_expression);
 
 
