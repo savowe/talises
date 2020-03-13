@@ -349,7 +349,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization_Wrapper ( void 
   * gravity.
   */
 template <class T, int dim, int no_int_states>
-void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step() //TODO modify for diagonal elements of Hamiltonian attribute
+void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
 {
   const double dt = -m_header.dt;
   double re1, im1, tmp1, phi[no_int_states];
@@ -359,6 +359,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step() //TODO modify for diagonal e
   //Vector for the components of the wavefunction
   for ( int i=0; i<no_int_states; i++ )
     Psi.push_back(m_fields[i]->Getp2In());
+
 
   for ( int l=0; l<this->m_no_of_pts; l++ )
   {
@@ -588,12 +589,13 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int Nk = seq.Nk;
     int Na = subN / seq.Nk;
 
+    /* Definitions for the Hamiltonian parser */
 	this->H_parser = new mu::Parser; // Parser in heap
+	/** Read in Hamiltonian strings from XML */
 	std::string H_expression = "";
 	H_expression += seq.H_real[0];
 	H_expression += ",";
 	H_expression += seq.H_imag[0];
-
 	for (int i = 1; i<seq.H_real.size(); i++)
 	{
 		H_expression += ",";
@@ -602,6 +604,14 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
 		H_expression += seq.H_imag[i];
 	}
 
+	/** Define Variables and Constants*/
+	std::map<std::string, double>::iterator it = this->m_params->m_map_constants.begin();
+	while(it != this->m_params->m_map_constants.end())
+	{
+	//std::cout<<it->first<<" :: "<<it->second<<std::endl;
+	this->H_parser->DefineConst(it->first, (double)it->second);
+	it++;
+	}
 	this->H_parser->DefineConst("pi", (double)M_PI);
 	this->H_parser->DefineConst("e", (double)M_E);
 	this->H_parser->DefineVar("t", &this->Get_t());

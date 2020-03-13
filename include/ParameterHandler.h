@@ -86,7 +86,7 @@ public:
   int Get_MaxIter();
 
   void Setup_muParser( mu::Parser& );
-
+  std::map<std::string,double> m_map_constants; ///< xml -> double (for constant scalar values)
   std::vector<sequence_item> m_sequence; ///< vector of sequence_items ( Elements of the sequence )
   std::vector<analyze_item> m_analyze; ///< vector of analyze_items (for ana_tools)
 protected:
@@ -100,7 +100,6 @@ protected:
   pugi::xml_document m_xml_doc; ///< load document here
   std::map<std::string,int> m_map_ai_type;
   std::map<std::string,int> m_map_freq; ///< xml -> int (options none, each and last e.g. for the frequency of computing particle numbers)
-  std::map<std::string,double> m_map_constants; ///< xml -> double (for constant scalar values)
   std::map<std::string,std::vector<double>> m_map_vconstants; ///< xml -> double (for constant vectors)
   std::map<std::string,std::string> m_map_algorithm; ///< xml -> string (function)
   std::map<std::string,std::string> m_map_simulation;
