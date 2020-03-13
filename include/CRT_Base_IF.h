@@ -354,7 +354,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step() //TODO modify for diagonal e
   const double dt = -m_header.dt;
   double re1, im1, tmp1, phi[no_int_states];
   CPoint<dim> x;
-
+  int nNum = this->H_parser->GetNumResults();
   vector<fftw_complex *> Psi;
   //Vector for the components of the wavefunction
   for ( int i=0; i<no_int_states; i++ )
@@ -362,7 +362,15 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step() //TODO modify for diagonal e
 
   for ( int l=0; l<this->m_no_of_pts; l++ )
   {
-    //Loop through column
+      this->x = this->m_fields[0]->Get_x(l);
+      double *H_ptr = this->H_parser->Eval(nNum);
+
+      for ( int i=0; i<no_int_states; i++ )
+      {
+		  double H_real = *(H_ptr+(2*i));
+		  phi[i] = H_real*dt;
+      }
+    /*/Loop through column
     for ( int i=0; i<no_int_states; i++ )
     {
       double tmp_density = Psi[i][l][0]*Psi[i][l][0] + Psi[i][l][1]*Psi[i][l][1];
@@ -377,7 +385,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step() //TODO modify for diagonal e
       x = m_fields[0]->Get_x(l);
       //phi[i] += beta[0]*x[0]-DeltaL[i];
       phi[i] *= dt;
-    }
+    }*/
 
     //Compute exponential: exp(V)*Psi
     for ( int i=0; i<no_int_states; i++ )
@@ -404,7 +412,6 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
   {
 	double re1, im1;
     const double dt = -m_header.dt;
-    const double t1 = this->Get_t();
 
     vector<fftw_complex *> Psi;
     for ( int i=0; i<no_int_states; i++ )
@@ -443,7 +450,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
             }
             else
             { //diagonal elements
-				gsl_matrix_complex_set(A,i,i, {H_real,H_imag});
+				gsl_matrix_complex_set(A,i,i, {H_real,0});
             }
             m += 1;
           }
