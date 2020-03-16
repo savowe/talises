@@ -164,9 +164,6 @@ Otherwise returns nil. Test is done via equal."
 (define-software openmpi
     :version "3.1.3"
     :url "https://www.open-mpi.org/software/ompi/v3.1/downloads/openmpi-3.1.3.tar.gz")
-(define-software hdf5
-    :version "1.10.1"
-    :url "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.4/src/hdf5-1.10.4.tar.gz")
 (define-software gsl
     :version "2.5"
     :url "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz")
@@ -176,9 +173,6 @@ Otherwise returns nil. Test is done via equal."
 (define-software fftw
     :version "3.3.8"
     :url "http://fftw.org/fftw-3.3.8.tar.gz")
-(define-software lis
-    :version "2.0.17"
-    :url "http://www.ssisc.org/lis/dl/lis-2.0.17.zip")
 (define-software atus2
     :version "git")
 (setf *packages* (reverse *packages*))
@@ -212,17 +206,6 @@ Otherwise returns nil. Test is done via equal."
       (sb-posix:setenv "CC" "mpicc" 1)
       (sb-posix:setenv "CXX" "mpic++" 1)
       (sb-posix:setenv "FC" "mpif90" 1))))
-
-;; hdf5
-(defmethod install ((sw hdf5))
-  "Install method for hdf5"
-  (with-slots (full-name url) sw
-    (uiop:with-current-directory ((uiop:ensure-directory-pathname (remove-tgz-filetype (file-namestring url))))
-      (run (format nil "./configure --enable-build-mode=production --enable-cxx --enable-optimization=high --prefix=~a~a" *install-dir* full-name))
-      (run "make clean")
-      (run (format nil "make ~@[-j ~a~]" *make-threads*))
-      (run "make install")
-      (export-variables full-name))))
 
 ;; gsl
 (defmethod install ((sw gsl))
@@ -264,19 +247,6 @@ Otherwise returns nil. Test is done via equal."
       (run "make clean")
       (run (format nil "make ~@[-j ~a~]" *make-threads*))
       (run (format nil "make install"))
-      (export-variables full-name))))
-
-;; lis
-(defmethod install ((sw lis))
-  "Install method for gsl"
-  (with-slots (full-name url) sw
-    (uiop:with-current-directory
-        ((uiop:ensure-directory-pathname (remove-tgz-filetype (file-namestring url))))
-      (run (format nil "./configure --prefix=~a~a --enable-omp --enable-shared"
-                   *install-dir* full-name))
-      (run "make clean")
-      (run (format nil "make ~@[-j ~a~]" *make-threads*))
-      (run "make install")
       (export-variables full-name))))
 
 ;; atus2

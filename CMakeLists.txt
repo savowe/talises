@@ -9,12 +9,9 @@ execute_process(COMMAND sh -c "module list")
 message("**********************************************************************")
 
 find_package(MPI)
-find_package(VTK NO_MODULE)
 find_package(Boost REQUIRED)
 find_package(GSL REQUIRED)
 find_package(FFTW REQUIRED)
-find_package(LIS REQUIRED)
-find_package(HDF5 REQUIRED)
 find_package(MUPARSER REQUIRED)
 message("**********************************************************************")
 
@@ -25,7 +22,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-std=gnu++14 -march=native -O3 -funroll-loops -ftre
 #set(CMAKE_CXX_FLAGS_DEBUG "-std=gnu++14 -g -Wall -Wextra -fopenmp -fsanitize=thread")
 #set(CMAKE_CXX_FLAGS_DEBUG "-std=gnu++14 -g -Wall -Wextra -fopenmp -fsanitize=address")
 set(CMAKE_CXX_FLAGS_DEBUG "-std=gnu++14 -g -Wall -Wextra -fopenmp -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable")
-
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release." FORCE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" )
@@ -42,14 +38,11 @@ set( EXECUTABLE_OUTPUT_PATH  ${HOME}/bin )
 
 include_directories( ${MPI_CXX_INCLUDE_PATH} 
                      ${Boost_INCLUDE_DIRS} 
-                     ${VTK_INCLUDE_DIRS} 
                      ${DIR_INC} ${DIR_MYLIB} 
                      ${DIR_MYLIB_MPI}/src_mpi 
                      ${GSL_INCLUDE_DIR} 
                      ${FFTW_INCLUDE_DIR} 
-                     ${LIS_INCLUDE_DIR} 
                      ${MUPARSER_INCLUDE_DIR} 
-                     ${HDF5_INCLUDE_DIR} 
 )
 
 # enable profiling
