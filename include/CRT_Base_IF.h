@@ -68,6 +68,7 @@ protected:
 
   mu::Parser* H_parser;
 
+
   static void Do_NL_Step_Wrapper(void *,sequence_item &);
   static void Numerical_Diagonalization_Wrapper(void *,sequence_item &);
 
@@ -409,6 +410,19 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
 template <class T, int dim, int no_int_states>
 void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
 {
+  int nNum = this->H_parser->GetNumResults();
+  this->H_parser->Eval(nNum);
+  const int N_H_eval = this->m_no_of_pts*no_int_states*nNum ;
+  double H_eval[N_H_eval];
+  for ( int l=0; l<this->m_no_of_pts; l++ )
+  {
+      this->x = this->m_fields[0]->Get_x(l);
+      double *H_ptr = this->H_parser->Eval(nNum);
+      for (int j=0; j<nNum; j++)
+      {
+        H_eval[l*nNum+j] = *(H_ptr+(j));
+      }
+  }
   #pragma omp parallel
   {
 	double re1, im1;
@@ -426,24 +440,19 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
     gsl_vector_complex *Psi_2 = gsl_vector_complex_alloc(no_int_states);
     gsl_matrix_complex *evec = gsl_matrix_complex_alloc(no_int_states,no_int_states);
 
-    int nNum = this->H_parser->GetNumResults();
-
     #pragma omp for
     for ( int l=0; l<this->m_no_of_pts; l++ )
     {
       gsl_matrix_complex_set_zero(A);
       gsl_matrix_complex_set_zero(B);
 
-      this->x = this->m_fields[0]->Get_x(l);
-      double *H_ptr = this->H_parser->Eval(nNum);
-
       int m = 0;
       for ( int i=0; i<no_int_states; i++ )
       {
           for ( int j=i; j<no_int_states; j++ )
           {
-        	  double H_real = *(H_ptr+(2*m));
-        	  double H_imag = *(H_ptr+(2*m+1));
+        	  double H_real = H_eval[l*nNum+2*m];
+        	  double H_imag = H_eval[l*nNum+2*m+1];
             if (i != j) //nondiagonal elements
             {
 				gsl_matrix_complex_set(A,i,j, {H_real,H_imag});
