@@ -1,3 +1,19 @@
 theme: jekyll-theme-cayman
 source: _docs
 include: _docs
+...
+defaults:
+  -
+    scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+      category: "project"
+  -
+    scope:
+      path: "_docs"
+      type: "pages" 
+    values:
+      layout: "default"
+...
