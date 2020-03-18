@@ -136,17 +136,8 @@ template <class T, int dim, int no_int_states>
 void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
 {
   char s[100];
-  for ( int i=0; i<dim; i++)
-    beta[i] = m_params->Get_VConstant("Beta",i);
-  try
-  {
-    m_rabi_threshold = m_params->Get_Constant("rabi_threshold");
-  }
-  catch (std::string &str )
-  {
-    cout << str << endl;
-    exit(EXIT_FAILURE);
-  }
+  //for ( int i=0; i<dim; i++)
+  //  beta[i] = m_params->Get_VConstant("Beta",i);
 }
 
 template <class T, int dim, int no_int_states>
@@ -412,9 +403,9 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
 {
   int nNum = this->H_parser->GetNumResults();
   this->H_parser->Eval(nNum);
-  const int N_H_eval = this->m_no_of_pts*no_int_states*nNum ;
+  const long int N_H_eval = this->m_no_of_pts*no_int_states*nNum ;
   double H_eval[N_H_eval];
-  for ( int l=0; l<this->m_no_of_pts; l++ )
+  for ( int l=0; l<this->m_no_of_pts; l++ ) //TODO parallelizing this would be good
   {
       this->x = this->m_fields[0]->Get_x(l);
       double *H_ptr = this->H_parser->Eval(nNum);
@@ -599,35 +590,35 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int Na = subN / seq.Nk;
 
     /* Definitions for the Hamiltonian parser */
-	this->H_parser = new mu::Parser; // Parser in heap
-	/** Read in Hamiltonian strings from XML */
-	std::string H_expression = "";
-	H_expression += seq.H_real[0];
-	H_expression += ",";
-	H_expression += seq.H_imag[0];
-	for (int i = 1; i<seq.H_real.size(); i++)
-	{
-		H_expression += ",";
-		H_expression += seq.H_real[i];
-		H_expression += ",";
-		H_expression += seq.H_imag[i];
-	}
+    this->H_parser = new mu::Parser; // Parser in heap
+    /** Read in Hamiltonian strings from XML */
+    std::string H_expression = "";
+    H_expression += seq.H_real[0];
+    H_expression += ",";
+    H_expression += seq.H_imag[0];
+    for (int i = 1; i<seq.H_real.size(); i++)
+    {
+      H_expression += ",";
+      H_expression += seq.H_real[i];
+      H_expression += ",";
+      H_expression += seq.H_imag[i];
+    }
 
-	/** Define Variables and Constants*/
-	std::map<std::string, double>::iterator it = this->m_params->m_map_constants.begin();
-	while(it != this->m_params->m_map_constants.end())
-	{
-	//std::cout<<it->first<<" :: "<<it->second<<std::endl;
-	this->H_parser->DefineConst(it->first, (double)it->second);
-	it++;
-	}
-	this->H_parser->DefineConst("pi", (double)M_PI);
-	this->H_parser->DefineConst("e", (double)M_E);
-	this->H_parser->DefineVar("t", &this->Get_t());
-	this->H_parser->DefineVar("x", &this->x[0]);
-	if (dim >=2) {this->H_parser->DefineVar("y", &this->x[1]);}
-	if (dim == 3) {this->H_parser->DefineVar("z", &this->x[2]);}
-	this->H_parser->SetExpr(H_expression);
+    /** Define Variables and Constants*/
+    std::map<std::string, double>::iterator it = this->m_params->m_map_constants.begin();
+    while(it != this->m_params->m_map_constants.end())
+    {
+      //std::cout<<it->first<<" :: "<<it->second<<std::endl;
+      this->H_parser->DefineConst(it->first, (double)it->second);
+      it++;
+    }
+    this->H_parser->DefineConst("pi", (double)M_PI);
+    this->H_parser->DefineConst("e", (double)M_E);
+    this->H_parser->DefineVar("t", &this->Get_t());
+    this->H_parser->DefineVar("x", &this->x[0]);
+    if (dim >=2) {this->H_parser->DefineVar("y", &this->x[1]);}
+    if (dim == 3) {this->H_parser->DefineVar("z", &this->x[2]);}
+    this->H_parser->SetExpr(H_expression);
 
 
 
@@ -635,9 +626,9 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     std::cout << "FYI: sequence no : " << seq_counter << "\n";
     std::cout << "FYI: duration    : " << max_duration << "\n";
     std::cout << "FYI: dt          : " << seq.dt << "\n";
-    std::cout << "FYI: Na          : " << Na << "\n";
-    std::cout << "FYI: Nk          : " << Nk << "\n";
-    std::cout << "FYI: Na*Nk*dt    : " << double(Na*Nk)*seq.dt << "\n";
+    //std::cout << "FYI: Na          : " << Na << "\n";
+    //std::cout << "FYI: Nk          : " << Nk << "\n";
+    //std::cout << "FYI: Na*Nk*dt    : " << double(Na*Nk)*seq.dt << "\n";
 
 
     if ( double(Na*Nk)*seq.dt != max_duration )

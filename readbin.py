@@ -1,17 +1,19 @@
-import os,sys,struct 
-import numpy as np
+from struct import unpack, calcsize
+from sys import argv
+from os.path import splitext
+from numpy import zeros, complex_
 
-def readbin(argv, save=False):
-    noargs = len(argv)
+def readbin(input_files, save=False):
+    noargs = len(input_files)
 
     if ( noargs == 0 ):
         print( "No filename specified." )
         exit()
 
-    fh = open(argv, 'rb' )
-
-    header_raw = fh.read(struct.calcsize("llllllliidddddddddddddd"))
-    header = struct.unpack( "llllllliidddddddddddddd", header_raw )
+    fh = open(input_files, 'rb' )
+    print("Read file: "+input_files)
+    header_raw = fh.read(calcsize("llllllliidddddddddddddd"))
+    header = unpack( "llllllliidddddddddddddd", header_raw )
     nDims = header[3]
     nDimX = header[4]
     nDimY = header[5]
@@ -41,17 +43,17 @@ def readbin(argv, save=False):
         exit()
 
 
-    newfilename = os.path.splitext( argv )[0] + ".mat"
+    newfilename = splitext( input_files )[0] + ".mat"
 
     fh.seek(header[0],0)
 
-    cmplxsize = struct.calcsize("dd")
+    cmplxsize = calcsize("dd")
 
     if (nDims == 1):
-        data = np.zeros((nDimX),dtype=np.complex_) 
+        data = zeros((nDimX),dtype=complex_) 
         for i in range(0, nDimX):
             rawcplxno = fh.read(cmplxsize)
-            cmplxno = struct.unpack( "dd", rawcplxno )
+            cmplxno = unpack( "dd", rawcplxno )
             data[i] = complex(cmplxno[0],cmplxno[1])
         if save == True:
             print("dims = (%ld,%ld,%ld)" % (nDimX,nDimY,nDimZ))
@@ -63,11 +65,11 @@ def readbin(argv, save=False):
         return {'wavefunction': data, 'nDimX': nDimX, 'xMin': xMin, 'xMax': xMax, 'dx': dx, 't': t}
 
     if (nDims == 2):
-        data = np.zeros((nDimX,nDimY),dtype=np.complex_) 
+        data = zeros((nDimX,nDimY),dtype=complex_) 
         for i in range(0, nDimX):
             for j in range(0, nDimY):
                 rawcplxno = fh.read(cmplxsize)
-                cmplxno = struct.unpack( "dd", rawcplxno )
+                cmplxno = unpack( "dd", rawcplxno )
                 data[j,i] = complex(cmplxno[0],cmplxno[1])
         if save == True:
             print("dims = (%ld,%ld,%ld)" % (nDimX,nDimY,nDimZ))
@@ -83,4 +85,5 @@ def readbin(argv, save=False):
     fh.close()
 
 if __name__ == '__main__':
-    readbin(sys.argv[1], save=True)
+    for i in range(1, len(argv)):
+        readbin(argv[i], save=True)

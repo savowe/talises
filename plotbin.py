@@ -37,8 +37,3 @@ def plotbin(filename):
 if __name__ == '__main__':
     plotbin(sys.argv[1])
 
-directory = "."
-file_extension = "2.bin"
-for file in os.listdir(directory):
-    if file.endswith(file_extension):
-        print(os.path.join(directory, file))
