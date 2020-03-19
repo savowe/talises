@@ -161,9 +161,6 @@ Otherwise returns nil. Test is done via equal."
                           :env-variables ,env-vars)
            *packages*)))
 
-(define-software openmpi
-    :version "3.1.3"
-    :url "https://www.open-mpi.org/software/ompi/v3.1/downloads/openmpi-3.1.3.tar.gz")
 (define-software gsl
     :version "2.5"
     :url "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz")
@@ -185,27 +182,6 @@ Otherwise returns nil. Test is done via equal."
 (defmethod install-module ((sw software))
   (%install-module sw))
 
-;; openmpi
-(defmethod install-module ((sw software))
-  (with-slots (name version env-variables) sw
-    (%install-module sw :variables '("CC" "mpicc"
-                                     "CXX" "mpic++"
-                                     "FC" "mpif90"))))
-
-(defmethod install ((sw openmpi))
-  "Install method for openmpi"
-  (with-slots (full-name url) sw
-    (uiop:with-current-directory ((uiop:ensure-directory-pathname (remove-tgz-filetype (file-namestring url))))
-      (run (format nil
-                   "./configure --prefix=~a~a --enable-mpi-fortran"
-                   *install-dir* full-name))
-      (run "make clean")
-      (run (format nil "make ~@[-j ~a~]" *make-threads*))
-      (run "make install")
-      (export-variables full-name)
-      (sb-posix:setenv "CC" "mpicc" 1)
-      (sb-posix:setenv "CXX" "mpic++" 1)
-      (sb-posix:setenv "FC" "mpif90" 1))))
 
 ;; gsl
 (defmethod install ((sw gsl))
