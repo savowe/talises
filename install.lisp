@@ -1,6 +1,6 @@
 #!/usr/bin/sbcl --script
 #|-*- mode:lisp -*-|#
-;;;; atus2-install.lisp
+;;;; talises-install.lisp
 
 (require "asdf")
 (require "sb-posix")
@@ -24,7 +24,7 @@
 (defparameter *root-p*
   (string= "0" (string-trim '(#\Space #\Tab #\Newline #\Return #\Linefeed)
                             (uiop:run-program "id -u" :output 'string))))
-(defparameter *atus-dir* (uiop:getcwd))
+(defparameter *talises-dir* (uiop:getcwd))
 (defparameter *default-system-build-dir* (pathname "/tmp/"))
 (defparameter *default-user-build-dir* (merge-pathnames "local/src/" (user-homedir-pathname)))
 (defparameter *build-dir* (or (when (get-arg "--build-dir")
@@ -170,7 +170,7 @@ Otherwise returns nil. Test is done via equal."
 (define-software fftw
     :version "3.3.8"
     :url "http://fftw.org/fftw-3.3.8.tar.gz")
-(define-software atus2
+(define-software talises
     :version "git")
 (setf *packages* (reverse *packages*))
 
@@ -202,7 +202,7 @@ Otherwise returns nil. Test is done via equal."
         ((uiop:ensure-directory-pathname full-name))
       (run (format nil "./configure --prefix=~a~a" *install-dir* full-name))
       (run "make clean")
-      (run "make")
+      (run (format nil "make CFLAGS=\"-march=native -std=gnu++11\" CPPFLAGS=\"-march=native -std=gnu++11\" LDFLAGS=\"-march=native -std=gnu++11\""))
       (run "make install")
       (export-variables full-name))))
 
@@ -214,7 +214,7 @@ Otherwise returns nil. Test is done via equal."
         (cpu-flags (get-cpu-flags)))
     (uiop:with-current-directory
         ((uiop:ensure-directory-pathname (remove-tgz-filetype (file-namestring url))))
-      (run (format nil "./configure --prefix=~a~a --enable-mpi --enable-openmp --enable-threads~@[ --enable-sse2~*~]~@[ --enable-avx~*~]~@[ --enable-fma~]"
+      (run (format nil "./configure --prefix=~a~a --enable-openmp --enable-threads~@[ --enable-sse2~*~]~@[ --enable-avx~*~]~@[ --enable-fma~]"
                    *install-dir*
                    full-name
                    (search " sse2 " cpu-flags)
@@ -225,10 +225,10 @@ Otherwise returns nil. Test is done via equal."
       (run (format nil "make install"))
       (export-variables full-name))))
 
-;; atus2
-(defmethod fetch ((sw atus2))
+;; talises
+(defmethod fetch ((sw talises))
   nil)
-(defmethod install-module ((sw atus2))
+(defmethod install-module ((sw talises))
   (%install-module sw
                    :dependencies
                    (loop :for package :in *packages*
@@ -236,13 +236,10 @@ Otherwise returns nil. Test is done via equal."
                       :collect (format nil "~a-~a"
                                        (string-downcase (name package))
                                        (version package)))))
-(defmethod install ((sw atus2))
-  "Install method for atus2"
-  (unless (and (every #'check-binary-exist
-                      (list "mpicc")))
-    (error "Dependencies missing"))
+(defmethod install ((sw talises))
+  "Install method for talises"
   (with-slots (full-name) sw
-    (uiop:with-current-directory (*atus-dir*)
+    (uiop:with-current-directory (*talises-dir*)
       (uiop:chdir (uiop:ensure-pathname (format nil "~abuild/" (uiop:getcwd))
                                         :ensure-directory t
                                         :ensure-directories-exist t))
@@ -340,7 +337,6 @@ prepend-path LD_RUN_PATH     $path/lib64
   (unless (and (every #'check-binary-exist
                       (list "gcc"
                             "g++"
-                            "gfortran"
                             "make"
                             "cmake")))
     (error "Error: Dependency missing.~%" )

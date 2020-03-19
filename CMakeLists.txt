@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.1)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 message("**********************************************************************")
-execute_process(COMMAND sh -c "module list")
+execute_process(COMMAND bash -c "module list")
 message("**********************************************************************")
 
 find_package(Boost REQUIRED)
