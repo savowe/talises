@@ -17,10 +17,10 @@ message("**********************************************************************"
 
 #SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
-set(CMAKE_CXX_FLAGS_RELEASE "-std=gnu++14 -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable")
+set(CMAKE_CXX_FLAGS_RELEASE "-std=gnu++14 -march=native -O3 -funroll-loops -ftree-vectorize -fopenmp -w -s -Wall")
 #set(CMAKE_CXX_FLAGS_DEBUG "-std=gnu++14 -g -Wall -Wextra -fopenmp -fsanitize=thread")
 #set(CMAKE_CXX_FLAGS_DEBUG "-std=gnu++14 -g -Wall -Wextra -fopenmp -fsanitize=address")
-set(CMAKE_CXX_FLAGS_DEBUG "-std=gnu++14 -march=native -O3 -funroll-loops -ftree-vectorize -fopenmp -w -s -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "-std=gnu++14 -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable")
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release." FORCE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" )
