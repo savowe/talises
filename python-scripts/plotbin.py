@@ -28,7 +28,6 @@ def plotbin(filename):
         plt.xlabel("x")
         plt.pcolormesh(x, y, psi2)
         plt.grid()
-        plt.legend()
         plt.tight_layout()
         plt.savefig(filename+".png")
         print(filename+".png has been created.")
