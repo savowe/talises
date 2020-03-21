@@ -1,0 +1,20 @@
+<SIMULATION>
+  <DIM>2</DIM>
+  <INTERNAL_DIM>2</INTERNAL_DIM>
+  <FILENAME>0.000_1.bin</FILENAME>
+  <FILENAME_2>0.000_2.bin</FILENAME_2>
+  <FILENAME_3>0.000_2.bin</FILENAME_3>
+  <CONSTANTS>
+    <omega>0.01</omega>
+  </CONSTANTS>
+  <VCONSTANTS>
+    <Alpha_1>0.000365368,0.000365368,0.000365368, 0.000365368</Alpha_1>
+  </VCONSTANTS>
+  <SEQUENCE>
+    <freeprop Nk="500" dt="2" output_freq="each" pn_freq="each" rabi_output_freq="none"
+H_11_real="1/2*omega^2*(x^2+y^2)" H_11_imag="0" H_22_real="0" H_22_imag="0"
+>10000</freeprop> 
+
+  </SEQUENCE>
+</SIMULATION>
+
