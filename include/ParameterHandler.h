@@ -33,8 +33,8 @@ struct sequence_item
   std::string name; ///< sequence identifier
   std::string content;
 
-  std::vector<std::string> H_real;
-  std::vector<std::string> H_imag;
+  std::vector<std::string> V_real;
+  std::vector<std::string> V_imag;
   //std::string H;
   std::vector<double> duration; ///< duration of the sequence
   double dt; ///< dt for this sequence

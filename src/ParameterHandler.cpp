@@ -101,29 +101,29 @@ void ParameterHandler::populate_sequence()
 			for (int j=i; j < internal_dim+1; j++)
 			{
 				char indices [20]; //with buffer
-				char H_real [] = "H_ij_real";
-				char H_imag [] = "H_ij_imag";
+				char V_real [] = "V_ij_real";
+				char V_imag [] = "V_ij_imag";
 				std::sprintf(indices, "%d%d", i, j);
-				H_real[2] = indices[0];
-				H_real[3] = indices[1];
-				H_imag[2] = indices[0];
-				H_imag[3] = indices[1];
-				const char *char_H_real = H_real;
-				const char *char_H_imag = H_imag;
+				V_real[2] = indices[0];
+				V_real[3] = indices[1];
+				V_imag[2] = indices[0];
+				V_imag[3] = indices[1];
+				const char *char_V_real = V_real;
+				const char *char_V_imag = V_imag;
 
-				if (std::strcmp(node.node().attribute(char_H_real).as_string(),"")==0)
+				if (std::strcmp(node.node().attribute(char_V_real).as_string(),"")==0)
 				{
-					printf( "No parameter %s specified.\n", char_H_real );
+					printf( "No parameter %s specified.\n", char_V_real );
 					throw;
 				}
-				if (std::strcmp(node.node().attribute(char_H_imag).as_string(),"")==0)
+				if (std::strcmp(node.node().attribute(char_V_imag).as_string(),"")==0)
 				{
-					printf( "No parameter %s specified.\n", char_H_real );
+					printf( "No parameter %s specified.\n", char_V_real );
 					throw;
 				}
 
-				item.H_real.push_back(node.node().attribute(char_H_real).as_string()) ;
-				item.H_imag.push_back(node.node().attribute(char_H_imag).as_string()) ;
+				item.V_real.push_back(node.node().attribute(char_V_real).as_string()) ;
+				item.V_imag.push_back(node.node().attribute(char_V_imag).as_string()) ;
 			}
 		}
     }
@@ -132,29 +132,29 @@ void ParameterHandler::populate_sequence()
 		for (int i=1; i < internal_dim+1; i++)
 		{
 			char indices [20]; //with buffer
-			char H_real [] = "H_ii_real";
-			char H_imag [] = "H_ii_imag";
+			char V_real [] = "V_ii_real";
+			char V_imag [] = "V_ii_imag";
 			std::sprintf(indices, "%d%d", i, i);
-			H_real[2] = indices[0];
-			H_real[3] = indices[1];
-			H_imag[2] = indices[0];
-			H_imag[3] = indices[1];
-			const char *char_H_real = H_real;
-			const char *char_H_imag = H_imag;
+			V_real[2] = indices[0];
+			V_real[3] = indices[1];
+			V_imag[2] = indices[0];
+			V_imag[3] = indices[1];
+			const char *char_V_real = V_real;
+			const char *char_V_imag = V_imag;
 
-			if (std::strcmp(node.node().attribute(char_H_real).as_string(),"")==0)
+			if (std::strcmp(node.node().attribute(char_V_real).as_string(),"")==0)
 			{
-				printf( "No parameter %s specified.\n", char_H_real );
+				printf( "No parameter %s specified.\n", char_V_real );
 				throw;
 			}
-			if (std::strcmp(node.node().attribute(char_H_imag).as_string(),"")==0)
+			if (std::strcmp(node.node().attribute(char_V_imag).as_string(),"")==0)
 			{
-				printf( "No parameter %s specified.\n", char_H_real );
+				printf( "No parameter %s specified.\n", char_V_real );
 				throw;
 			}
 
-			item.H_real.push_back(node.node().attribute(char_H_real).as_string()) ;
-			item.H_imag.push_back(node.node().attribute(char_H_imag).as_string()) ;
+			item.V_real.push_back(node.node().attribute(char_V_real).as_string()) ;
+			item.V_imag.push_back(node.node().attribute(char_V_imag).as_string()) ;
 		}
     }
 

@@ -60,7 +60,7 @@ protected:
         chirp_rate; // Chirp rate of the frequency of the laser fields
   bool amp_is_t;
 
-  mu::Parser* H_parser;
+  mu::Parser* V_parser;
 
 
   static void Do_NL_Step_Wrapper(void *,sequence_item &);
@@ -340,7 +340,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
   const double dt = -m_header.dt;
   double re1, im1, tmp1, phi[no_int_states];
   CPoint<dim> x;
-  int nNum = this->H_parser->GetNumResults();
+  int nNum = this->V_parser->GetNumResults();
   vector<fftw_complex *> Psi;
   //Vector for the components of the wavefunction
   for ( int i=0; i<no_int_states; i++ )
@@ -350,12 +350,12 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
   for ( int l=0; l<this->m_no_of_pts; l++ )
   {
       this->x = this->m_fields[0]->Get_x(l);
-      double *H_ptr = this->H_parser->Eval(nNum);
+      double *V_ptr = this->V_parser->Eval(nNum);
 
       for ( int i=0; i<no_int_states; i++ )
       {
-		  double H_real = *(H_ptr+(2*i));
-		  phi[i] = H_real*dt;
+		  double V_real = *(V_ptr+(2*i));
+		  phi[i] = V_real*dt;
       }
     /*/Loop through column
     for ( int i=0; i<no_int_states; i++ )
@@ -395,17 +395,17 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
 template <class T, int dim, int no_int_states>
 void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
 {
-  int nNum = this->H_parser->GetNumResults();
-  this->H_parser->Eval(nNum);
-  const long int N_H_eval = this->m_no_of_pts*no_int_states*nNum ;
-  double H_eval[N_H_eval];
+  int nNum = this->V_parser->GetNumResults();
+  this->V_parser->Eval(nNum);
+  const long int N_V_eval = this->m_no_of_pts*no_int_states*nNum ;
+  double V_eval[N_V_eval];
   for ( int l=0; l<this->m_no_of_pts; l++ ) //TODO parallelizing this would be good
   {
       this->x = this->m_fields[0]->Get_x(l);
-      double *H_ptr = this->H_parser->Eval(nNum);
+      double *V_ptr = this->V_parser->Eval(nNum);
       for (int j=0; j<nNum; j++)
       {
-        H_eval[l*nNum+j] = *(H_ptr+(j));
+        V_eval[l*nNum+j] = *(V_ptr+(j));
       }
   }
   #pragma omp parallel
@@ -436,16 +436,16 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
       {
           for ( int j=i; j<no_int_states; j++ )
           {
-        	  double H_real = H_eval[l*nNum+2*m];
-        	  double H_imag = H_eval[l*nNum+2*m+1];
+        	  double V_real = V_eval[l*nNum+2*m];
+        	  double V_imag = V_eval[l*nNum+2*m+1];
             if (i != j) //nondiagonal elements
             {
-				gsl_matrix_complex_set(A,i,j, {H_real,H_imag});
-				gsl_matrix_complex_set(A,j,i, {H_real,-H_imag});
+				gsl_matrix_complex_set(A,i,j, {V_real,V_imag});
+				gsl_matrix_complex_set(A,j,i, {V_real,-V_imag});
             }
             else
             { //diagonal elements
-				gsl_matrix_complex_set(A,i,i, {H_real,0});
+				gsl_matrix_complex_set(A,i,i, {V_real,0});
             }
             m += 1;
           }
@@ -584,18 +584,18 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     int Na = subN / seq.Nk;
 
     /* Definitions for the Hamiltonian parser */
-    this->H_parser = new mu::Parser; // Parser in heap
+    this->V_parser = new mu::Parser; // Parser in heap
     /** Read in Hamiltonian strings from XML */
-    std::string H_expression = "";
-    H_expression += seq.H_real[0];
-    H_expression += ",";
-    H_expression += seq.H_imag[0];
-    for (int i = 1; i<seq.H_real.size(); i++)
+    std::string V_expression = "";
+    V_expression += seq.V_real[0];
+    V_expression += ",";
+    V_expression += seq.V_imag[0];
+    for (int i = 1; i<seq.V_real.size(); i++)
     {
-      H_expression += ",";
-      H_expression += seq.H_real[i];
-      H_expression += ",";
-      H_expression += seq.H_imag[i];
+      V_expression += ",";
+      V_expression += seq.V_real[i];
+      V_expression += ",";
+      V_expression += seq.V_imag[i];
     }
 
     /** Define Variables and Constants*/
@@ -603,16 +603,16 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     while(it != this->m_params->m_map_constants.end())
     {
       //std::cout<<it->first<<" :: "<<it->second<<std::endl;
-      this->H_parser->DefineConst(it->first, (double)it->second);
+      this->V_parser->DefineConst(it->first, (double)it->second);
       it++;
     }
-    this->H_parser->DefineConst("pi", (double)M_PI);
-    this->H_parser->DefineConst("e", (double)M_E);
-    this->H_parser->DefineVar("t", &this->Get_t());
-    this->H_parser->DefineVar("x", &this->x[0]);
-    if (dim >=2) {this->H_parser->DefineVar("y", &this->x[1]);}
-    if (dim == 3) {this->H_parser->DefineVar("z", &this->x[2]);}
-    this->H_parser->SetExpr(H_expression);
+    this->V_parser->DefineConst("pi", (double)M_PI);
+    this->V_parser->DefineConst("e", (double)M_E);
+    this->V_parser->DefineVar("t", &this->Get_t());
+    this->V_parser->DefineVar("x", &this->x[0]);
+    if (dim >=2) {this->V_parser->DefineVar("y", &this->x[1]);}
+    if (dim == 3) {this->V_parser->DefineVar("z", &this->x[2]);}
+    this->V_parser->SetExpr(V_expression);
 
 
 
