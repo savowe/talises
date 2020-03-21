@@ -52,16 +52,16 @@ protected:
   using CRT_Base<T,dim,no_int_states>::m_custom_fct;
   using CRT_shared::m_no_of_pts;
 
-  /// Gravitational potential
-  CPoint<dim> beta;
   CPoint<dim> x;
 
   std::array<double,2> phase, // Additional phase (for example phase errors)
         chirp_rate; // Chirp rate of the frequency of the laser fields
   bool amp_is_t;
+  bool position_dependent;
+  bool time_dependent;
+  bool nonlinear;
 
   mu::Parser* V_parser;
-
 
   static void Do_NL_Step_Wrapper(void *,sequence_item &);
   static void Numerical_Diagonalization_Wrapper(void *,sequence_item &);
@@ -70,30 +70,11 @@ protected:
   void Numerical_Diagonalization();
 
   void UpdateParams();
-  void Output_rabi_freq_list(string, const long long);
-  void Output_chirps_list(string);
 
   /// Define custom sequences
   virtual bool run_custom_sequence( const sequence_item & )=0;
 
-  /// Area around momentum states
-  double m_rabi_threshold;
 
-
-  /** Contains the position of the momentum states in momentum space */
-  vector<CPoint<dim>> m_rabi_momentum_list;
-  /** The data for Rabi-oscillations is stored here
-    * In this list we store the particle number of each momentum state defined in
-    * #m_rabi_momentum_list after each outer loop (after Nk time steps).
-    */
-  list<list<double>> m_rabi_freq_list;
-  /** Contains the phasescan
-    * In this list we store the particle number of each momentum state defined in
-    * #m_rabi_momentum_list after a Chirp.
-    */
-  list<list<double>> m_chirps_list;
-
-  void compute_rabi_integrals();
 
   double Amplitude_at_time();
 };
@@ -165,148 +146,7 @@ double CRT_Base_IF<T,dim,no_int_states>::Amplitude_at_time()
 }
 
 
-/** Calculate number of particles in the momentum states of the first internal state
-  *
-  * The momentum states are defined in the list #m_rabi_momentum_list.
-  *
-  * The particle number is calculated in Fourierspace.
-  */
-template <class T, int dim, int no_int_states>
-void CRT_Base_IF<T,dim,no_int_states>::compute_rabi_integrals()
-{
-  int n = m_rabi_momentum_list.size();
-  if ( n == 0 )
-  {
-    std::cerr << "WARNING: Rabi momentum list is empty. Cannot compute rabi frquencies." << endl;
-    return;
-  }
 
-  fftw_complex *psik = m_fields[0]->Getp2In();
-  //Fourier transform
-  m_fields[0]->ft(-1);
-
-  double res[n];
-  memset(res,0,n*sizeof(double));
-  double *tmp;
-  #pragma omp parallel
-  {
-    const int nthreads = omp_get_num_threads();
-    const int ithread = omp_get_thread_num();
-
-    CPoint<dim> k1, d;
-
-    //size of tmp equals number of threads
-    #pragma omp single
-    {
-      tmp = new double[n*nthreads];
-      for (int i=0; i<(n*nthreads); i++) tmp[i] = 0;
-    }
-
-    #pragma omp for
-    for ( int i=0; i<m_no_of_pts; i++ )
-    {
-      k1 = m_fields[0]->Get_k(i);
-      int j=0;
-      //Loop through all momentum states
-      for ( auto k0 : m_rabi_momentum_list )
-      {
-        //Compute distance from momentum state
-        d = (k0)-k1;
-        //if point lies within area defined by threshold
-        if ( sqrt(d*d) < m_rabi_threshold )
-        {
-          tmp[ithread*n+j] += psik[i][0]*psik[i][0] + psik[i][1]*psik[i][1];
-          continue;
-        }
-        j++;
-      }
-    }
-
-    //Sum over all threads
-    #pragma omp for
-    for (int i=0; i<n; i++)
-    {
-      for (int t=0; t<nthreads; t++)
-      {
-        res[i] += tmp[n*t + i];
-      }
-    }
-  }
-  delete [] tmp;
-
-  //Write number of particles per momentum state
-  list<double> tmpvec;
-  for ( int i=0; i<n; i++ )
-  {
-    tmpvec.push_back(this->m_ar_k*res[i]);
-  }
-
-  m_rabi_freq_list.push_back(tmpvec);
-
-  //Transform back in real space
-  m_fields[0]->ft(1);
-}
-
-/** Write Rabi oscillation to file
-  *
-  * Write #m_rabi_momentum_list to a file called filename
-  * @param Nk number of full steps
-  */
-template <class T, int dim, int no_int_states>
-void CRT_Base_IF<T,dim,no_int_states>::Output_rabi_freq_list( string filename, const long long Nk )
-{
-  ofstream txtfile( filename );
-
-  double t=0;
-
-  //header
-  txtfile << "# time \t";
-  for ( auto i : m_rabi_momentum_list )
-  {
-    txtfile << i << "\t";
-  }
-  txtfile << endl;
-
-  //data
-  for ( auto i : m_rabi_freq_list )
-  {
-    txtfile << t << "\t";
-    for ( auto j : i )
-    {
-      txtfile << j << "\t";
-    }
-    txtfile << endl;
-    t+=this->m_header.dt*double(Nk);
-  }
-}
-/** Write phasescan due to laser chirp to file
-  *
-  * Write #m_chirps_list to a file called filename
-  */
-template <class T, int dim, int no_int_states>
-void CRT_Base_IF<T,dim,no_int_states>::Output_chirps_list( string filename )
-{
-  ofstream txtfile( filename );
-
-  //header
-  txtfile << "# Step \t Chirp \t ";
-  for ( auto i : m_rabi_momentum_list )
-  {
-    txtfile << i << "\t";
-  }
-  txtfile << endl;
-
-  //data
-  for ( auto i : m_chirps_list )
-  {
-    for ( auto j : i )
-    {
-      txtfile.precision(8);
-      txtfile << j << "\t";
-    }
-    txtfile << endl;
-  }
-}
 
 /** Wrapper function for Do_NL_Step()
   * @param ptr Function pointer to be set to Do_NL_Step()
@@ -527,11 +367,7 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
   char filename[1024];
 
   std::cout << "FYI: Found " << m_params->m_sequence.size() << " sequences." << std::endl;
-  int nrm = m_rabi_momentum_list.size();
-  if ( nrm == 0 )
-  {
-    //std::cerr << "WARNING: Rabi momentum list is empty. Cannot compute rabi frquencies." << endl;
-  }
+
 
   try
   {
@@ -554,26 +390,7 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
       continue;
     }
 
-    if ( seq.name == "set_momentum" )
-    {
-      std::vector<std::string> vec;
-      strtk::parse(seq.content,",",vec);
-      CPoint<dim> P;
-
-      assert( vec.size() > dim );
-      assert( seq.comp <= dim );
-
-      for ( int i=0; i<dim; i++ )
-        P[i] = stod(vec[i]);
-
-      this->Setup_Momentum( P, seq.comp );
-
-      std::cout << "FYI: started new sequence " << seq.name << "\n";
-      std::cout << "FYI: momentum set for component " << seq.comp << "\n";
-      continue;
-    }
-
-
+  
     double max_duration = 0;
     for ( int i = 0; i < seq.duration.size(); i++)
       if (seq.duration[i] > max_duration )
@@ -613,9 +430,17 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     if (dim >=2) {this->V_parser->DefineVar("y", &this->x[1]);}
     if (dim == 3) {this->V_parser->DefineVar("z", &this->x[2]);}
     this->V_parser->SetExpr(V_expression);
-
-
-
+/*
+    // Get the map with the used variables
+    const std::map<std::__cxx11::basic_string<char>, double*> variables =  this->V_parser->GetUsedVar();
+    // Get the number of variables 
+    std::map<std::__cxx11::basic_string<char>, double*>::const_iterator item = variables.begin();
+    // Query the variables
+    for (; item!=variables.end(); ++item)
+    {
+      cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
+    }
+*/
     std::cout << "FYI: started new sequence " << seq.name << "\n";
     std::cout << "FYI: sequence no : " << seq_counter << "\n";
     std::cout << "FYI: duration    : " << max_duration << "\n";
@@ -641,7 +466,7 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
       exit(EXIT_FAILURE);
     }
 
-    if ( seq.name == "freeprop" ) seq.no_of_chirps=1;
+    if ( seq.name == "freeprop" )
     double backup_t = m_header.t;
     double backup_end_t = m_header.t;
     for ( int k=0; k<no_int_states; k++ ) // Delete old packed Sequence
@@ -649,32 +474,6 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
       sprintf( filename, "Seq_%d_%d.bin", seq_counter, k+1 );
       std::remove(filename);
     }
-
-    m_chirps_list.clear();
-
-    double dw[seq.no_of_chirps], dphi[seq.no_of_chirps];
-
-    if (seq.no_of_chirps > 1)
-    {
-      for ( int k=0; k<no_int_states; k++ ) // Save Wavefunction to reset per chirp
-      {
-        sprintf( filename, "%.3f_%d.bin", this->Get_t(), k+1 );
-        this->Save_Phi( filename, k );
-      }
-      dw[0] = seq.chirp_min;
-      dw[1] = seq.chirp_max;
-    }
-    else
-      dw[0] = 0;
-
-    for ( int s=0; s<seq.no_of_chirps; ++s )
-    {
-      m_rabi_freq_list.clear();
-      chirp_rate[0] = dw[s];
-      if (seq.chirp_mode == 1)
-      {
-        phase[0] = s*2.0*M_PI/(1.0*seq.no_of_chirps);
-      }
 
       for ( int i=1; i<=Na; i++ )
       {
@@ -689,7 +488,7 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
 
         std::cout << "t = " << to_string(m_header.t) << std::endl;
 
-        if ( (seq.output_freq == freq::each) and (s == 0) )
+        if ( seq.output_freq == freq::each )
         {
           for ( int k=0; k<no_int_states; k++ )
           {
@@ -698,7 +497,7 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
           }
         }
 
-        if ( (seq.output_freq == freq::packed) and (s == 0) )
+        if ( seq.output_freq == freq::packed )
         {
           for ( int k=0; k<no_int_states; k++ )
           {
@@ -713,18 +512,13 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
             std::cout << "N[" << c << "] = " << this->Get_Particle_Number(c) << std::endl;
         }
 
-        if ( seq.rabi_output_freq == freq::each )
-        {
-          compute_rabi_integrals();
-        }
-
         if ( seq.custom_freq == freq::each && m_custom_fct != nullptr )
         {
           (*m_custom_fct)(this,seq);
         }
       }
 
-      if ( (seq.output_freq == freq::last) and (s == 0) )
+      if (seq.output_freq == freq::last )
       {
         for ( int k=0; k<no_int_states; k++ )
         {
@@ -732,17 +526,6 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
           this->Save_Phi( filename, k );
         }
       }
-
-      if ( (seq.no_of_chirps > 1) and (s == 0) )
-      {
-        backup_end_t = this->Get_t();
-        for ( int k=0; k<no_int_states; k++ )
-        {
-          sprintf( filename, "%.3f_%d.bin", this->Get_t(), k+1 );
-          this->Save_Phi( filename, k );
-        }
-      }
-
 
       if ( seq.compute_pn_freq == freq::last )
       {
@@ -754,92 +537,6 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
       {
         (*m_custom_fct)(this,seq);
       }
-
-      if ( seq.rabi_output_freq == freq::last )
-      {
-        compute_rabi_integrals();
-
-        cout << "Rabi output for timestep ";
-        for ( auto i : m_rabi_freq_list )
-        {
-          cout << this->Get_t() << "\n";
-          for ( auto j : i ) cout << j << "\t";
-          cout << endl;
-        }
-      }
-
-      if ( seq.rabi_output_freq == freq::each )
-      {
-        sprintf(filename, "Rabi_%d_%d.txt", seq_counter, s );
-        Output_rabi_freq_list(filename,seq.Nk);
-      }
-
-      if ( seq.no_of_chirps > 1 )
-      {
-        //Calculate number of particles of each momentum state (for chirps)
-        if (  nrm > 0)
-        {
-          compute_rabi_integrals();
-          list<double> tmp = m_rabi_freq_list.back();
-          if (seq.chirp_mode == 1)
-          {
-            tmp.push_front(phase[0]);
-          }
-          else
-          {
-            dphi[s] = tmp.front();
-            tmp.push_front(chirp_rate[0]);
-          }
-          tmp.push_front(s);
-          m_chirps_list.push_back(tmp);
-        }
-
-        // Loading files from last sequence
-        if ( s<seq.no_of_chirps-1 )
-        {
-          for ( int k=0; k<no_int_states; k++ )
-          {
-            sprintf( filename, "%.3f_%d.bin", backup_t, k+1 );
-            ifstream file1( filename, ifstream::binary );
-            file1.seekg( sizeof(generic_header), ifstream::beg );
-            file1.read( (char *)m_fields[k]->Getp2In(), sizeof(fftw_complex)*m_no_of_pts );
-          }
-          this->m_header.t = backup_t;
-        }
-
-        //Calculate new chirp
-        if ( s>0 && s<seq.no_of_chirps-1)
-        {
-          dw[s+1] = (dw[s]+dw[s-1])/2;
-          if (dphi[s]-dphi[s-1]<0)
-          {
-            dw[s] = dw[s-1];
-            dphi[s] = dphi[s-1];
-          }
-        }
-      }
-    } // end of phase scan loop
-
-    //Output number of particles dependent on chirp
-    if ( seq.no_of_chirps > 1 )
-    {
-      sprintf(filename, "Chirp_%d.txt", seq_counter );
-      Output_chirps_list(filename);
-    }
-
-    // Loading files after initial chirp sequence
-    if ( seq.no_of_chirps > 1 )
-    {
-      for ( int k=0; k<no_int_states; k++ )
-      {
-        sprintf( filename, "%.3f_%d.bin", backup_end_t, k+1 );
-        ifstream file1( filename, ifstream::binary );
-        file1.seekg( sizeof(generic_header), ifstream::beg );
-        file1.read( (char *)m_fields[k]->Getp2In(), sizeof(fftw_complex)*m_no_of_pts );
-      }
-      assert(this->m_header.t = backup_end_t);
-      this->m_header.t = backup_end_t;
-    }
 
     seq_counter++;
   } // end of sequence loop
