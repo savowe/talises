@@ -93,12 +93,13 @@ public:
   void run()
   {
     double n_of_particles=1;
-    std::string filename, guess_str;
+    std::string filename, real_str, imag_str;
         
     try
     {
       filename = m_ph.Get_simulation("FILENAME");
-      guess_str = m_ph.Get_simulation("GUESS_" + std::to_string(dim) + "D");
+      real_str = m_ph.Get_simulation("PSI_REAL_" + std::to_string(dim) + "D");
+      imag_str = m_ph.Get_simulation("PSI_IMAG_" + std::to_string(dim) + "D");
       n_of_particles = m_ph.Get_Constant("N");
     }
     catch (const std::string info )
@@ -115,25 +116,36 @@ public:
     {
       double coord[dim];
 
-      mu::Parser mup;
-      m_ph.Setup_muParser( mup );
+      mu::Parser mup_real;
+      mu::Parser mup_imag;
+      m_ph.Setup_muParser( mup_real );
+      m_ph.Setup_muParser( mup_imag );
 
       switch (dim)
       {
       case 1:
-        mup.SetExpr(guess_str);
-        mup.DefineVar("x", &coord[0]);
+        mup_real.SetExpr(real_str);
+        mup_real.DefineVar("x", &coord[0]);
+        mup_imag.SetExpr(imag_str);
+        mup_imag.DefineVar("x", &coord[0]);
         break;
       case 2:
-        mup.SetExpr(guess_str);
-        mup.DefineVar("x", &coord[0]);
-        mup.DefineVar("y", &coord[1]);
+        mup_real.SetExpr(real_str);
+        mup_real.DefineVar("x", &coord[0]);
+        mup_real.DefineVar("y", &coord[1]);
+        mup_imag.SetExpr(imag_str);
+        mup_imag.DefineVar("x", &coord[0]);
+        mup_imag.DefineVar("y", &coord[1]);
         break;
       case 3:
-        mup.SetExpr(guess_str);
-        mup.DefineVar("x", &coord[0]);
-        mup.DefineVar("y", &coord[1]);
-        mup.DefineVar("z", &coord[2]);
+        mup_real.SetExpr(real_str);
+        mup_real.DefineVar("x", &coord[0]);
+        mup_real.DefineVar("y", &coord[1]);
+        mup_real.DefineVar("z", &coord[2]);
+        mup_imag.SetExpr(imag_str);
+        mup_imag.DefineVar("x", &coord[0]);
+        mup_imag.DefineVar("y", &coord[1]);
+        mup_imag.DefineVar("z", &coord[2]);
         break;
       }
 
@@ -144,8 +156,8 @@ public:
 
         try
         {
-          m_psi[l][0] = mup.Eval();
-          m_psi[l][1] = 0;
+          m_psi[l][0] = mup_real.Eval();
+          m_psi[l][1] = mup_imag.Eval();
         }
         catch ( mu::Parser::exception_type &e )
         {
@@ -157,7 +169,7 @@ public:
           throw;
         }
 
-        N += m_psi[l][0]*m_psi[l][0];
+        N += m_psi[l][0]*m_psi[l][0] + m_psi[l][1]*m_psi[l][1];
       }
 
       #pragma omp single
@@ -171,6 +183,7 @@ public:
         for ( long long l=0; l<Ntot; l++ )
         {
           m_psi[l][0] *= f;
+          m_psi[l][1] *= f;
         }
       }
     }
