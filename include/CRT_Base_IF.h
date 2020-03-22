@@ -53,10 +53,12 @@ protected:
   using CRT_shared::m_no_of_pts;
 
   CPoint<dim> x;
+  std::vector<double> psi_real;
+  std::vector<double> psi_imag;
 
-  std::array<double,2> phase, // Additional phase (for example phase errors)
-        chirp_rate; // Chirp rate of the frequency of the laser fields
-  bool amp_is_t;
+  double psi_real_array[50];
+  double psi_imag_array[50];
+
   bool position_dependent;
   bool time_dependent;
   bool nonlinear;
@@ -74,9 +76,6 @@ protected:
   /// Define custom sequences
   virtual bool run_custom_sequence( const sequence_item & )=0;
 
-
-
-  double Amplitude_at_time();
 };
 
 
@@ -113,36 +112,6 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
   char s[100];
   //for ( int i=0; i<dim; i++)
   //  beta[i] = m_params->Get_VConstant("Beta",i);
-}
-
-template <class T, int dim, int no_int_states>
-double CRT_Base_IF<T,dim,no_int_states>::Amplitude_at_time()
-{
-  if ( amp_is_t )
-  {
-    double time;
-    try
-    {
-      mu::Parser mup;
-      m_params->Setup_muParser( mup );
-      mup.SetExpr(m_params->Get_simulation("AMP_T"));
-      mup.DefineVar("t",&time);
-
-      time = this->Get_t()+0.5*this->Get_dt();
-      return mup.Eval();
-    }
-    catch (mu::Parser::exception_type &e)
-    {
-      cout << "Message:  " << e.GetMsg() << "\n";
-      cout << "Formula:  " << e.GetExpr() << "\n";
-      cout << "Token:    " << e.GetToken() << "\n";
-      cout << "Position: " << e.GetPos() << "\n";
-      cout << "Errc:     " << e.GetCode() << "\n";
-      exit(EXIT_FAILURE);
-    }
-  }
-  else
-    return 1;
 }
 
 
@@ -236,21 +205,33 @@ template <class T, int dim, int no_int_states>
 void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
 {
   int nNum = this->V_parser->GetNumResults();
-  this->V_parser->Eval(nNum);
-  const long int N_V_eval = this->m_no_of_pts*no_int_states*nNum ;
+  this->V_parser->Eval(nNum); // initializes nNum
+  const long long int N_V_eval = this->m_no_of_pts*no_int_states*nNum ;
   double V_eval[N_V_eval];
-  for ( int l=0; l<this->m_no_of_pts; l++ ) //TODO parallelizing this would be good
+  if (this->position_dependent == true) //Calculate V(r,t) at t for all r
   {
+    for ( int l=0; l<this->m_no_of_pts; l++ ) //TODO parallelizing this would be good
+    {
+      for ( int i=0; i<no_int_states; i++ )
+      {
+        vector<fftw_complex *> Psi;
+        Psi.push_back(m_fields[i]->Getp2In());
+        double *psi_real_ptr = *(Psi[0]);
+        double *psi_imag_ptr = *(Psi[0]+1);
+        this->psi_real_array[i] = *psi_real_ptr;
+        this->psi_imag_array[i] = *psi_imag_ptr;
+      }
       this->x = this->m_fields[0]->Get_x(l);
       double *V_ptr = this->V_parser->Eval(nNum);
       for (int j=0; j<nNum; j++)
       {
         V_eval[l*nNum+j] = *(V_ptr+(j));
       }
+    }
   }
   #pragma omp parallel
   {
-	double re1, im1;
+	  double re1, im1;
     const double dt = -m_header.dt;
 
     vector<fftw_complex *> Psi;
@@ -415,32 +396,72 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
       V_expression += seq.V_imag[i];
     }
 
-    /** Define Variables and Constants*/
-    std::map<std::string, double>::iterator it = this->m_params->m_map_constants.begin();
-    while(it != this->m_params->m_map_constants.end())
-    {
-      //std::cout<<it->first<<" :: "<<it->second<<std::endl;
-      this->V_parser->DefineConst(it->first, (double)it->second);
-      it++;
-    }
-    this->V_parser->DefineConst("pi", (double)M_PI);
-    this->V_parser->DefineConst("e", (double)M_E);
-    this->V_parser->DefineVar("t", &this->Get_t());
-    this->V_parser->DefineVar("x", &this->x[0]);
-    if (dim >=2) {this->V_parser->DefineVar("y", &this->x[1]);}
-    if (dim == 3) {this->V_parser->DefineVar("z", &this->x[2]);}
+
+    /* Set final Hamiltonian*/
     this->V_parser->SetExpr(V_expression);
-/*
     // Get the map with the used variables
     const std::map<std::__cxx11::basic_string<char>, double*> variables =  this->V_parser->GetUsedVar();
     // Get the number of variables 
     std::map<std::__cxx11::basic_string<char>, double*>::const_iterator item = variables.begin();
     // Query the variables
+    position_dependent = false;
+    time_dependent = false;
+    nonlinear = false;
+
     for (; item!=variables.end(); ++item)
     {
-      cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
+      if ((item->first == "x" ) or (item->first == "y" ) or (item->first == "z" ))
+      {
+        position_dependent = true;
+        cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
+      }
+      if (item->first == "t")
+      {
+        time_dependent = true;
+        cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
+      }
+      if (item->first.rfind("psi_", 0) == 0) 
+      {
+        nonlinear = true;
+        cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
+      }
     }
-*/
+    /* Define Variables and Constants*/
+    // self-defined constants
+    std::map<std::string, double>::iterator it = this->m_params->m_map_constants.begin();
+    while(it != this->m_params->m_map_constants.end())
+    {
+      this->V_parser->DefineConst(it->first, (double)it->second);
+      it++;
+    }
+    // constants
+    this->V_parser->DefineConst("pi", (double)M_PI);
+    this->V_parser->DefineConst("e", (double)M_E);
+    // variables
+    if (time_dependent == true) {this->V_parser->DefineVar("t", &this->Get_t());}
+    if (position_dependent == true) 
+    {
+      this->V_parser->DefineVar("x", &this->x[0]);
+      if (dim >=2) {this->V_parser->DefineVar("y", &this->x[1]);}
+      if (dim == 3) {this->V_parser->DefineVar("z", &this->x[2]);}
+    }
+
+    if (nonlinear == true)
+    {
+      for (int i = 0; i < this->m_fields.size(); i++)
+      {
+        std::string tmp_str = "psi_real_";
+        tmp_str += std::to_string(i+1);
+        this->V_parser->DefineVar(tmp_str, &this->psi_real_array[i] );
+        tmp_str = "psi_imag_";
+        tmp_str += std::to_string(i+1);
+        this->V_parser->DefineVar(tmp_str, &this->psi_imag_array[i] );
+      }
+    }
+
+
+
+
     std::cout << "FYI: started new sequence " << seq.name << "\n";
     std::cout << "FYI: sequence no : " << seq_counter << "\n";
     std::cout << "FYI: duration    : " << max_duration << "\n";
