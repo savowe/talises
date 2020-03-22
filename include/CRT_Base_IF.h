@@ -205,24 +205,45 @@ template <class T, int dim, int no_int_states>
 void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
 {
   int nNum = this->V_parser->GetNumResults();
-  this->V_parser->Eval(nNum); // initializes nNum
+  double *V_ptr = this->V_parser->Eval(nNum); // initializes nNum
   const long long int N_V_eval = this->m_no_of_pts*no_int_states*nNum ;
   double V_eval[N_V_eval];
-  if (this->position_dependent == true) //Calculate V(r,t) at t for all r
+  if (this->nonlinear == true) //Calculate V(psi(r,t),r,t) at t for all r
   {
     for ( int l=0; l<this->m_no_of_pts; l++ ) //TODO parallelizing this would be good
     {
+      vector<fftw_complex *> psi;
       for ( int i=0; i<no_int_states; i++ )
       {
-        vector<fftw_complex *> Psi;
-        Psi.push_back(m_fields[i]->Getp2In());
-        double *psi_real_ptr = *(Psi[0]);
-        double *psi_imag_ptr = *(Psi[0]+1);
-        this->psi_real_array[i] = *psi_real_ptr;
-        this->psi_imag_array[i] = *psi_imag_ptr;
+        psi.push_back(m_fields[i]->Getp2In());
+        this->psi_real_array[i] = psi[i][l][0];
+        this->psi_imag_array[i] = psi[i][l][1];
       }
       this->x = this->m_fields[0]->Get_x(l);
-      double *V_ptr = this->V_parser->Eval(nNum);
+      V_ptr = this->V_parser->Eval(nNum);
+      for (int j=0; j<nNum; j++)
+      {
+        V_eval[l*nNum+j] = *(V_ptr+(j));
+      }
+    }
+  }
+  if ( (this->position_dependent == true) and (this->nonlinear == false)) //Calculate V(r,t) at t for all r
+  {
+    for ( int l=0; l<this->m_no_of_pts; l++ ) //TODO parallelizing this would be good
+    {
+      this->x = this->m_fields[0]->Get_x(l);
+      V_ptr = this->V_parser->Eval(nNum);
+      for (int j=0; j<nNum; j++)
+      {
+        V_eval[l*nNum+j] = *(V_ptr+(j));
+      }
+    }
+  }
+  if ( (this->position_dependent == false) and (this->nonlinear == false)) //Calculate V(t) at t
+  {
+    V_ptr = this->V_parser->Eval(nNum);
+    for ( int l=0; l<this->m_no_of_pts; l++ ) //TODO parallelizing this would be good
+    {
       for (int j=0; j<nNum; j++)
       {
         V_eval[l*nNum+j] = *(V_ptr+(j));
@@ -255,40 +276,23 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
       int m = 0;
       for ( int i=0; i<no_int_states; i++ )
       {
-          for ( int j=i; j<no_int_states; j++ )
+        for ( int j=i; j<no_int_states; j++ )
+        {
+          double V_real = V_eval[l*nNum+2*m];
+          double V_imag = V_eval[l*nNum+2*m+1];
+          if (i != j) //nondiagonal elements
           {
-        	  double V_real = V_eval[l*nNum+2*m];
-        	  double V_imag = V_eval[l*nNum+2*m+1];
-            if (i != j) //nondiagonal elements
-            {
-				gsl_matrix_complex_set(A,i,j, {V_real,V_imag});
-				gsl_matrix_complex_set(A,j,i, {V_real,-V_imag});
-            }
-            else
-            { //diagonal elements
-				gsl_matrix_complex_set(A,i,i, {V_real,0});
-            }
-            m += 1;
+            gsl_matrix_complex_set(A,i,j, {V_real,V_imag});
+            gsl_matrix_complex_set(A,j,i, {V_real,-V_imag});
           }
+          else
+          { //diagonal elements
+            gsl_matrix_complex_set(A,i,i, {V_real,0});
+          }
+          m += 1;
+        }
       }
 
-      /*
-      //Diagonal elements + Nonlinear part: \Delta+g|\Phi|^2
-      for ( int i=0; i<no_int_states; i++ )
-      {
-      	double tmp_density = Psi[i][l][0]*Psi[i][l][0] + Psi[i][l][1]*Psi[i][l][1];
-      	if (tmp_density <= 0.0)
-      	{
-      		phi[i] = 0.0;
-      	} else
-      	{
-      		phi[i] = -this->m_b*log( tmp_density );
-      	}
-        x = this->m_fields[0]->Get_x(l);
-        phi[i] += DeltaL[i];
-        gsl_matrix_complex_set(A,i,i, {phi[i],0});
-      }
-	*/
 
 
       //Compute Eigenvalues + Eigenvector
@@ -397,7 +401,7 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     }
 
 
-    /* Set final Hamiltonian*/
+    /* Set Hamiltonian to evaluate dependencies*/
     this->V_parser->SetExpr(V_expression);
     // Get the map with the used variables
     const std::map<std::__cxx11::basic_string<char>, double*> variables =  this->V_parser->GetUsedVar();
@@ -413,17 +417,17 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
       if ((item->first == "x" ) or (item->first == "y" ) or (item->first == "z" ))
       {
         position_dependent = true;
-        cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
+        //cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
       }
       if (item->first == "t")
       {
         time_dependent = true;
-        cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
+        //cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
       }
       if (item->first.rfind("psi_", 0) == 0) 
       {
         nonlinear = true;
-        cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
+        //cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
       }
     }
     /* Define Variables and Constants*/
@@ -450,19 +454,54 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     {
       for (int i = 0; i < this->m_fields.size(); i++)
       {
-        std::string tmp_str = "psi_real_";
+        std::string tmp_str = "psi_";
         tmp_str += std::to_string(i+1);
+        tmp_str += "_real";
         this->V_parser->DefineVar(tmp_str, &this->psi_real_array[i] );
-        tmp_str = "psi_imag_";
+        tmp_str = "psi_";
         tmp_str += std::to_string(i+1);
+        tmp_str += "_imag";
         this->V_parser->DefineVar(tmp_str, &this->psi_imag_array[i] );
       }
     }
 
+    // Set the final Hamiltonian
+    this->V_parser->SetExpr(V_expression);
 
-
+    /* for debugging parser
+    // Get the map with the used variables
+    const std::map<std::__cxx11::basic_string<char>, double*> variable =  this->V_parser->GetUsedVar();
+    // Get the number of variables 
+    std::map<std::__cxx11::basic_string<char>, double*>::const_iterator items = variable.begin();
+    // Query the variables
+    for (; items!=variable.end(); ++items)
+    {
+        cout << "Name: " << items->first << " Address: [0x" << items->second << " Value: " << *items->second << "]\n";
+    }
+    */
 
     std::cout << "FYI: started new sequence " << seq.name << "\n";
+    if (time_dependent == true)
+    {
+      std::cout << "FYI: Hamiltonian is " << "time-dependent, ";
+    } else
+    {
+      std::cout << "FYI: Hamiltonian is " << "time-independent, ";
+    }
+    if (position_dependent == true)
+    {
+      std::cout << "position-dependent ";
+    } else
+    {
+      std::cout << "position-independent ";
+    }
+    if (nonlinear == true)
+    {
+      std::cout << "and nonlinear" << "\n";
+    } else
+    {
+      std::cout << "and linear" << "\n";
+    }
     std::cout << "FYI: sequence no : " << seq_counter << "\n";
     std::cout << "FYI: duration    : " << max_duration << "\n";
     std::cout << "FYI: dt          : " << seq.dt << "\n";
