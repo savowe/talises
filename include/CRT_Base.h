@@ -152,7 +152,7 @@ CRT_Base<T,dim,no_int_states>::CRT_Base( ParameterHandler *params )
 
   double m_L = std::stod(m_params->Get_simulation("L"));
   double m_T = std::stod(m_params->Get_simulation("T"));
-  double m_m = std::stod(m_params->Get_simulation("m"));
+  double m_m = std::stod(m_params->Get_simulation("M"));
   double hbar = 1.054571817e-34;
   
   //Read alpha from xml
