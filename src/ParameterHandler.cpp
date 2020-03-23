@@ -160,8 +160,6 @@ void ParameterHandler::populate_sequence()
 
     tmpstr = node.node().attribute("output_freq").as_string("none");
     item.output_freq = m_map_freq[tmpstr];
-    tmpstr = node.node().attribute("rabi_output_freq").as_string("none");
-    item.rabi_output_freq = m_map_freq[tmpstr];
     tmpstr = node.node().attribute("pn_freq").as_string("last");
     item.compute_pn_freq = m_map_freq[tmpstr];
     tmpstr = node.node().attribute("custom_freq").as_string("none");
@@ -169,10 +167,6 @@ void ParameterHandler::populate_sequence()
     tmpstr = node.node().attribute("analyze").as_string("none");
     item.analyze = m_map_freq[tmpstr];
 
-    item.chirp_mode = node.node().attribute("chirp_mode").as_int(0);
-    item.no_of_chirps = node.node().attribute("no_of_chirps").as_int(1);
-    item.chirp_min = node.node().attribute("chirp_min").as_double(0);
-    item.chirp_max = node.node().attribute("chirp_max").as_double(0);
 
     vec.clear();
     strtk::parse(item.content,",",vec);

@@ -125,7 +125,7 @@ protected:
 
 /** Constructor
   *
-  * The scaling factor m_alpha for the kinetic part and the scaling factor m_gs for the nonlinear term are initialised.
+  * The scaling factor m_alpha for the kinetic part is initialised.
   * Call functions Allocate(), LoadFiles() and Init().
   * @param params Pointer to ParameterHandler object to read from xml files
   */
@@ -150,11 +150,17 @@ CRT_Base<T,dim,no_int_states>::CRT_Base( ParameterHandler *params )
   m_custom_fct=nullptr;
   m_potenial_initialized=false;
 
-  string tmpstr;
-
+  double m_L = std::stod(m_params->Get_simulation("L"));
+  double m_T = std::stod(m_params->Get_simulation("T"));
+  double m_m = std::stod(m_params->Get_simulation("m"));
+  double hbar = 1.054571817e-34;
+  
   //Read alpha from xml
   for ( int i=0; i<dim; i++ )
-    m_alpha[i] = m_params->Get_VConstant( "Alpha_1", i );;
+  {
+    m_alpha[i] = hbar*m_T/(2*m_L*m_L*m_m);
+  }
+
   m_header.dt = params->Get_dt();
 }
 
