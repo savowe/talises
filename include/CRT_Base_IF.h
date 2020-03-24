@@ -53,8 +53,7 @@ protected:
   using CRT_shared::m_no_of_pts;
 
   CPoint<dim> x;
-  std::vector<double> psi_real;
-  std::vector<double> psi_imag;
+  double t;
 
   double psi_real_array[50];
   double psi_imag_array[50];
@@ -146,51 +145,93 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization_Wrapper ( void 
 template <class T, int dim, int no_int_states>
 void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
 {
-  const double dt = -m_header.dt;
+  const double dt = -m_header.dt*this->m_T;
+  this->t = this->Get_t()*this->m_T;
   double re1, im1, tmp1, phi[no_int_states];
-  CPoint<dim> x;
+
   int nNum = this->V_parser->GetNumResults();
   vector<fftw_complex *> Psi;
   //Vector for the components of the wavefunction
   for ( int i=0; i<no_int_states; i++ )
     Psi.push_back(m_fields[i]->Getp2In());
 
-
-  for ( int l=0; l<this->m_no_of_pts; l++ )
+  if (this->nonlinear == true) //Calculate V(psi(r,t),r,t) at t for all r
   {
-      this->x = this->m_fields[0]->Get_x(l);
-      double *V_ptr = this->V_parser->Eval(nNum);
+    for ( int l=0; l<this->m_no_of_pts; l++ )
+    {
+        //vector<fftw_complex *> psi;
+        for ( int i=0; i<no_int_states; i++ )
+        {
+          //psi.push_back(m_fields[i]->Getp2In());
+          this->psi_real_array[i] = Psi[i][l][0];
+          this->psi_imag_array[i] = Psi[i][l][1];
+        }
 
+        this->x = this->m_fields[0]->Get_x(l);
+        double *V_ptr = this->V_parser->Eval(nNum);
+        for ( int i=0; i<no_int_states; i++ )
+        {
+        double V_real = *(V_ptr+(2*i));
+        phi[i] = V_real*dt;
+        }
+      
+      //Compute exponential: exp(V)*Psi
       for ( int i=0; i<no_int_states; i++ )
       {
-		  double V_real = *(V_ptr+(2*i));
-		  phi[i] = V_real*dt;
-      }
-    /*/Loop through column
-    for ( int i=0; i<no_int_states; i++ )
-    {
-      double tmp_density = Psi[i][l][0]*Psi[i][l][0] + Psi[i][l][1]*Psi[i][l][1];
-      if (tmp_density <= 0.0)
-      {
-    	 phi[i] = 0.0;
-      } else
-      {
-    	  phi[i] = -this->m_b*log( tmp_density );
-    	  phi[i] += this->m_gs[i+no_int_states*i]*tmp_density;
-      }
-      x = m_fields[0]->Get_x(l);
-      //phi[i] += beta[0]*x[0]-DeltaL[i];
-      phi[i] *= dt;
-    }*/
+        sincos( phi[i], &im1, &re1 );
 
-    //Compute exponential: exp(V)*Psi
-    for ( int i=0; i<no_int_states; i++ )
-    {
-      sincos( phi[i], &im1, &re1 );
+        tmp1 = Psi[i][l][0];
+        Psi[i][l][0] = Psi[i][l][0]*re1 - Psi[i][l][1]*im1;
+        Psi[i][l][1] = Psi[i][l][1]*re1 + tmp1*im1;
+      }
+    }
+  }
 
-      tmp1 = Psi[i][l][0];
-      Psi[i][l][0] = Psi[i][l][0]*re1 - Psi[i][l][1]*im1;
-      Psi[i][l][1] = Psi[i][l][1]*re1 + tmp1*im1;
+  if ( (this->position_dependent == true) and (this->nonlinear == false)) //Calculate V(r,t) at t for all r
+  {
+    for ( int l=0; l<this->m_no_of_pts; l++ )
+    {
+
+        this->x = this->m_fields[0]->Get_x(l);
+        double *V_ptr = this->V_parser->Eval(nNum);
+        for ( int i=0; i<no_int_states; i++ )
+        {
+        double V_real = *(V_ptr+(2*i));
+        phi[i] = V_real*dt;
+        }
+      
+      //Compute exponential: exp(V)*Psi
+      for ( int i=0; i<no_int_states; i++ )
+      {
+        sincos( phi[i], &im1, &re1 );
+
+        tmp1 = Psi[i][l][0];
+        Psi[i][l][0] = Psi[i][l][0]*re1 - Psi[i][l][1]*im1;
+        Psi[i][l][1] = Psi[i][l][1]*re1 + tmp1*im1;
+      }
+    }
+  }
+
+  if ( (this->position_dependent == false) and (this->nonlinear == false)) //Calculate V(t) at t
+  {
+    double *V_ptr = this->V_parser->Eval(nNum);
+    for ( int l=0; l<this->m_no_of_pts; l++ )
+    {    
+      for ( int i=0; i<no_int_states; i++ )
+      {
+        double V_real = *(V_ptr+(2*i));
+        phi[i] = V_real*dt;
+      }
+      
+      //Compute exponential: exp(V)*Psi
+      for ( int i=0; i<no_int_states; i++ )
+      {
+        sincos( phi[i], &im1, &re1 );
+
+        tmp1 = Psi[i][l][0];
+        Psi[i][l][0] = Psi[i][l][0]*re1 - Psi[i][l][1]*im1;
+        Psi[i][l][1] = Psi[i][l][1]*re1 + tmp1*im1;
+      }
     }
   }
 }
@@ -204,22 +245,27 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
 template <class T, int dim, int no_int_states>
 void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
 {
+  this->t = this->Get_t()*this->m_T;
   int nNum = this->V_parser->GetNumResults();
   double *V_ptr = this->V_parser->Eval(nNum); // initializes nNum
   const long long int N_V_eval = this->m_no_of_pts*no_int_states*nNum ;
   double V_eval[N_V_eval];
+  vector<fftw_complex *> Psi;
+  for ( int i=0; i<no_int_states; i++ )
+    Psi.push_back(m_fields[i]->Getp2In());
+
   if (this->nonlinear == true) //Calculate V(psi(r,t),r,t) at t for all r
   {
     for ( int l=0; l<this->m_no_of_pts; l++ ) //TODO parallelizing this would be good
     {
-      vector<fftw_complex *> psi;
+      //vector<fftw_complex *> psi;
       for ( int i=0; i<no_int_states; i++ )
       {
-        psi.push_back(m_fields[i]->Getp2In());
-        this->psi_real_array[i] = psi[i][l][0];
-        this->psi_imag_array[i] = psi[i][l][1];
+        //psi.push_back(m_fields[i]->Getp2In());
+        this->psi_real_array[i] = Psi[i][l][0];
+        this->psi_imag_array[i] = Psi[i][l][1];
       }
-      this->x = this->m_fields[0]->Get_x(l);
+      this->x = this->m_fields[0]->Get_x(l)*this->m_L;
       V_ptr = this->V_parser->Eval(nNum);
       for (int j=0; j<nNum; j++)
       {
@@ -231,7 +277,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
   {
     for ( int l=0; l<this->m_no_of_pts; l++ ) //TODO parallelizing this would be good
     {
-      this->x = this->m_fields[0]->Get_x(l);
+      this->x = this->m_fields[0]->Get_x(l)*this->m_L;
       V_ptr = this->V_parser->Eval(nNum);
       for (int j=0; j<nNum; j++)
       {
@@ -253,11 +299,11 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
   #pragma omp parallel
   {
 	  double re1, im1;
-    const double dt = -m_header.dt;
+    const double dt = -m_header.dt*this->m_T;
 
-    vector<fftw_complex *> Psi;
-    for ( int i=0; i<no_int_states; i++ )
-      Psi.push_back(m_fields[i]->Getp2In());
+    //vector<fftw_complex *> Psi;
+    //for ( int i=0; i<no_int_states; i++ )
+    //  Psi.push_back(m_fields[i]->Getp2In());
 
     gsl_matrix_complex *A = gsl_matrix_complex_calloc(no_int_states,no_int_states);
     gsl_matrix_complex *B = gsl_matrix_complex_calloc(no_int_states,no_int_states);
@@ -442,7 +488,7 @@ void CRT_Base_IF<T,dim,no_int_states>::run_sequence()
     this->V_parser->DefineConst("pi", (double)M_PI);
     this->V_parser->DefineConst("e", (double)M_E);
     // variables
-    if (time_dependent == true) {this->V_parser->DefineVar("t", &this->Get_t());}
+    if (time_dependent == true) {this->V_parser->DefineVar("t", &this->t);}
     if (position_dependent == true) 
     {
       this->V_parser->DefineVar("x", &this->x[0]);

@@ -82,6 +82,10 @@ protected:
   /// Dimensionless scaling factor for the kinetic part in n dimensions
   CPoint<dim> m_alpha;
 
+  double m_M;
+  double m_L;
+  double m_T;
+
   /// Exponential of the whole kinetic operator. See Init() for further information.
   fftw_complex *m_full_step;
   /// Exponential of half of the kinetic operator. See Init() for further information.
@@ -150,15 +154,15 @@ CRT_Base<T,dim,no_int_states>::CRT_Base( ParameterHandler *params )
   m_custom_fct=nullptr;
   m_potenial_initialized=false;
 
-  double m_L = std::stod(m_params->Get_simulation("L"));
-  double m_T = std::stod(m_params->Get_simulation("T"));
-  double m_m = std::stod(m_params->Get_simulation("M"));
+  m_L = std::stod(m_params->Get_simulation("L"));
+  m_T = std::stod(m_params->Get_simulation("T"));
+  m_M = std::stod(m_params->Get_simulation("M"));
   double hbar = 1.054571817e-34;
   
   //Read alpha from xml
   for ( int i=0; i<dim; i++ )
   {
-    m_alpha[i] = hbar*m_T/(2*m_L*m_L*m_m);
+    m_alpha[i] = hbar*m_T/(2*m_L*m_L*m_M);
   }
 
   m_header.dt = params->Get_dt();
