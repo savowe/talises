@@ -174,11 +174,11 @@ public:
       }
 
       #pragma omp single
-      N *= m_ar*pow(m_L,dim);
+      N *= m_ar;
 
       if ( N > 0.0)
       {
-        const double f=sqrt(n_of_particles/N);
+        const double f=sqrt(n_of_particles/(N*pow(m_L,dim)));
 
         #pragma omp for
         for ( long long l=0; l<Ntot; l++ )

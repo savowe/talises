@@ -593,6 +593,7 @@ double CRT_Base<T,dim,no_int_states>::Get_Particle_Number( const int comp )
   {
     retval += (Psi[l][0]*Psi[l][0] + Psi[l][1]*Psi[l][1]);
   }
+  retval *= pow(m_L,dim);
   return m_ar*retval;
 }
 
