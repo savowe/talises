@@ -167,7 +167,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
           this->psi_imag_array[i] = Psi[i][l][1];
         }
 
-        this->x = this->m_fields[0]->Get_x(l);
+        this->x = this->m_fields[0]->Get_x(l)*this->m_L;
         double *V_ptr = this->V_parser->Eval(nNum);
         for ( int i=0; i<no_int_states; i++ )
         {
@@ -192,12 +192,12 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
     for ( int l=0; l<this->m_no_of_pts; l++ )
     {
 
-        this->x = this->m_fields[0]->Get_x(l);
+        this->x = this->m_fields[0]->Get_x(l)*this->m_L;
         double *V_ptr = this->V_parser->Eval(nNum);
         for ( int i=0; i<no_int_states; i++ )
         {
-        double V_real = *(V_ptr+(2*i));
-        phi[i] = V_real*dt;
+          double V_real = *(V_ptr+(2*i));
+          phi[i] = V_real*dt;
         }
       
       //Compute exponential: exp(V)*Psi

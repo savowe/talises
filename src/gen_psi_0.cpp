@@ -94,12 +94,13 @@ public:
   {
     double n_of_particles=1;
     std::string filename, real_str, imag_str;
-        
+    double m_L;
     try
     {
       filename = m_ph.Get_simulation("FILENAME");
       real_str = m_ph.Get_simulation("PSI_REAL_" + std::to_string(dim) + "D");
       imag_str = m_ph.Get_simulation("PSI_IMAG_" + std::to_string(dim) + "D");
+      m_L = std::stod(m_ph.Get_simulation("L"));
       n_of_particles = m_ph.Get_Constant("N");
     }
     catch (const std::string info )
@@ -173,7 +174,7 @@ public:
       }
 
       #pragma omp single
-      N *= m_ar;
+      N *= m_ar*pow(m_L,dim);
 
       if ( N > 0.0)
       {
