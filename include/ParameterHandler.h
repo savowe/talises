@@ -91,6 +91,8 @@ public:
   double Get_yMax();
   double Get_zMin();
   double Get_zMax();
+  double Get_L();
+  double Get_T();
 
   int Get_NX();
   int Get_NY();

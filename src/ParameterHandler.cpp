@@ -459,6 +459,23 @@ double ParameterHandler::Get_zMin()
   return retval;
 }
 
+double ParameterHandler::Get_L()
+{
+  double retval=1;
+  auto it = m_map_simulation.find("L");
+  if ( it != m_map_simulation.end() ) retval = stod((*it).second);
+  return retval;
+}
+
+double ParameterHandler::Get_T()
+{
+  double retval=1;
+  auto it = m_map_simulation.find("T");
+  if ( it != m_map_simulation.end() ) retval = stod((*it).second);
+  return retval;
+}
+
+
 int ParameterHandler::Get_NX()
 {
   int retval=256;
@@ -549,6 +566,8 @@ void ParameterHandler::Get_Header( generic_header &header, bool bcomplex )
     header.xMin = Get_xMin();
     header.dx = fabs(header.xMax-header.xMin)/double(header.nDimX);
     header.dkx  = 2*M_PI/fabs(header.xMax-header.xMin);
+    header.L = Get_L();
+    header.T = Get_T();
     break;
   case 2:
     header.nDimX = Get_NX();
@@ -562,6 +581,8 @@ void ParameterHandler::Get_Header( generic_header &header, bool bcomplex )
     header.dy = fabs(header.yMax-header.yMin)/double(header.nDimY);
     header.dkx  = 2*M_PI/fabs(header.xMax-header.xMin);
     header.dky  = 2*M_PI/fabs(header.yMax-header.yMin);
+    header.L = Get_L();
+    header.T = Get_T();
     break;
   case 3:
     header.nDimX = Get_NX();
@@ -579,6 +600,8 @@ void ParameterHandler::Get_Header( generic_header &header, bool bcomplex )
     header.dkx  = 2*M_PI/fabs(header.xMax-header.xMin);
     header.dky  = 2*M_PI/fabs(header.yMax-header.yMin);
     header.dkz  = 2*M_PI/fabs(header.zMax-header.zMin);
+    header.L = Get_L();
+    header.T = Get_T();
     break;
   }
   header.dt   = 0.001;

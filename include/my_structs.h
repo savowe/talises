@@ -52,8 +52,10 @@ struct generic_header
   double    dt;
   int       ks; // Koordinaten-System
   int       fs; // 1 -> fourier space, 0 -> real space
+  double    L;
+  double    T;
   int       nFuture[99];
-  double    dFuture[100];
+  double    dFuture[98];
 };
 #pragma pack(pop)
 #endif

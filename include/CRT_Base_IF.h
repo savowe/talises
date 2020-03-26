@@ -111,6 +111,7 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
   char s[100];
   //for ( int i=0; i<dim; i++)
   //  beta[i] = m_params->Get_VConstant("Beta",i);
+  this->m_header.T = m_params->Get_T();
 }
 
 
