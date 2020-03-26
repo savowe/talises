@@ -180,7 +180,8 @@ public:
 
       if ( N > 0.0)
       {
-        const double f=sqrt(n_of_particles/(N*pow(m_L,dim)));
+        //const double f=sqrt(n_of_particles/(N*pow(m_L,dim)));
+        const double f=sqrt(n_of_particles/N);
 
         #pragma omp for
         for ( long long l=0; l<Ntot; l++ )

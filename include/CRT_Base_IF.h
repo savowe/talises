@@ -164,8 +164,8 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
         for ( int i=0; i<no_int_states; i++ )
         {
           //psi.push_back(m_fields[i]->Getp2In());
-          this->psi_real_array[i] = Psi[i][l][0];
-          this->psi_imag_array[i] = Psi[i][l][1];
+          this->psi_real_array[i] = Psi[i][l][0]/std::pow(this->m_L,dim/2);
+          this->psi_imag_array[i] = Psi[i][l][1]/std::pow(this->m_L,dim/2);
         }
 
         this->x = this->m_fields[0]->Get_x(l)*this->m_L;
@@ -262,9 +262,8 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
       //vector<fftw_complex *> psi;
       for ( int i=0; i<no_int_states; i++ )
       {
-        //psi.push_back(m_fields[i]->Getp2In());
-        this->psi_real_array[i] = Psi[i][l][0];
-        this->psi_imag_array[i] = Psi[i][l][1];
+        this->psi_real_array[i] = Psi[i][l][0]/std::pow(this->m_L,dim/2);
+        this->psi_imag_array[i] = Psi[i][l][1]/std::pow(this->m_L,dim/2);
       }
       this->x = this->m_fields[0]->Get_x(l)*this->m_L;
       V_ptr = this->V_parser->Eval(nNum);

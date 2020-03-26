@@ -21,11 +21,11 @@ t = np.concatenate((psi_1_1["t"],psi_2_1["t"],psi_3_1["t"]))
 xMin = psi_1_1["xMin"]
 xMax = psi_1_1["xMax"]
 nDimX = psi_1_1["nDimX"]
-L = psi_1_1["L"]
+
 x = np.linspace(xMin, xMax, nDimX)
 # Calculate probabillity densities
-den_1 = np.abs(psi_1)**2*L
-den_2 = np.abs(psi_2)**2*L
+den_1 = np.abs(psi_1)
+den_2 = np.abs(psi_2)
 max_density = np.max(den_2)
 
 ## Create animated gif
@@ -33,7 +33,7 @@ import gif
 @gif.frame
 def plot(den1, den2, x, t, max_density):
     fig, (ax1, ax2) = plt.subplots(2, sharex=True)
-    ax1.plot(x, den2, label = "t="+"{:3f}".format(t))
+    ax1.plot(x, den2, label = "t="+"{:3f}".format(t)+r' $\mu$s')
     ax1.set_ylabel(r"$|\Psi|^2$ [$\mu$m$^{-1}$] excited")
     ax2.plot(x, den1)
     ax2.set_ylabel(r"$|\Psi|^2$ [$\mu$m$^{-1}$] ground")
