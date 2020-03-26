@@ -45,32 +45,49 @@ def readbin(input_files, save=False):
 
     newfilename = splitext( input_files )[0] + ".mat"
 
-    fh.seek(header[0],0)
-
+    data_length = fh.seek(0,2)
+    fh.seek(0,0)
+    
     cmplxsize = calcsize("dd")
 
     if (nDims == 1):
-        data = zeros((nDimX),dtype=complex_) 
-        for i in range(0, nDimX):
-            rawcplxno = fh.read(cmplxsize)
-            cmplxno = unpack( "dd", rawcplxno )
-            data[i] = complex(cmplxno[0],cmplxno[1])
+        Nt = int(data_length/(header[0]+nDimX*cmplxsize)) #Number of time-steps in file
+        data = zeros((nDimX,Nt),dtype=complex_)
+        t = zeros(Nt)
+        for n in range(0,Nt):
+            fh.seek(n*(header[0]+nDimX*cmplxsize)) # go to beginning of file
+            header_raw = fh.read(calcsize("llllllliidddddddddddddd"))
+            header = unpack( "llllllliidddddddddddddd", header_raw )
+            t[n] = header[9]
+            fh.seek(n*(header[0]+nDimX*cmplxsize))
+            fh.seek(header[0], 1) #skip header file relative to above position
+            for i in range(0, nDimX): #read wave-function data
+                rawcplxno = fh.read(cmplxsize)
+                cmplxno = unpack( "dd", rawcplxno )
+                data[i,n] = complex(cmplxno[0],cmplxno[1])
         if save == True:
-            print("dims = (%ld,%ld,%ld)" % (nDimX,nDimY,nDimZ))
-            print("xrange = (%g,%g)" % (xMin,xMax))
-            print("t = %g" % (t))
             import scipy.io as sio
             sio.savemat(newfilename, mdict={'wavefunction': data, 'nDimX': nDimX, 'xMin': xMin, 'xMax': xMax, 'dx': dx, 't': t} )
             print(newfilename+" created.")
+
         return {'wavefunction': data, 'nDimX': nDimX, 'xMin': xMin, 'xMax': xMax, 'dx': dx, 't': t}
 
     if (nDims == 2):
+        Nt = int(data_length/(header[0]+nDimX*DimY*cmplxsize)) #Number of time-steps in file
         data = zeros((nDimX,nDimY),dtype=complex_) 
-        for i in range(0, nDimX):
-            for j in range(0, nDimY):
-                rawcplxno = fh.read(cmplxsize)
-                cmplxno = unpack( "dd", rawcplxno )
-                data[j,i] = complex(cmplxno[0],cmplxno[1])
+        t = zeros(Nt)
+        for n in range(0,Nt):
+            fh.seek(n*(header[0]+nDimX*DimY*cmplxsize)) # go to beginning of file
+            header_raw = fh.read(calcsize("llllllliidddddddddddddd"))
+            header = unpack( "llllllliidddddddddddddd", header_raw )
+            t[n] = header[9]
+            fh.seek(n*(header[0]+nDimX*DimY*cmplxsize))
+            fh.seek(header[0], 1) #skip header file relative to above position
+            for i in range(0, nDimX):
+                for j in range(0, nDimY):
+                    rawcplxno = fh.read(cmplxsize)
+                    cmplxno = unpack( "dd", rawcplxno )
+                    data[j,i] = complex(cmplxno[0],cmplxno[1])
         if save == True:
             print("dims = (%ld,%ld,%ld)" % (nDimX,nDimY,nDimZ))
             print("xrange = (%g,%g)" % (xMin,xMax))

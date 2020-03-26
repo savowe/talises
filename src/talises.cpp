@@ -63,6 +63,7 @@ int main( int argc, char *argv[] ){
   ParameterHandler params(argv[1]);
   int dim=0;
   int internal_dim = 0;
+  int no_of_threads = 1;
 
   try
   {
@@ -80,7 +81,7 @@ int main( int argc, char *argv[] ){
     cout << "Errc:     " << e.GetCode() << "\n";
   }
 
-  int no_of_threads = 4;
+  no_of_threads = std::stod(params.Get_simulation("N_THREADS"));
 
   char *envstr = getenv( "MY_NO_OF_THREADS" );
   if ( envstr != nullptr ) no_of_threads = atoi( envstr );
@@ -88,6 +89,8 @@ int main( int argc, char *argv[] ){
   fftw_init_threads();
   fftw_plan_with_nthreads( no_of_threads );
   omp_set_num_threads( no_of_threads );
+
+  std::cout << "FYI: Number of threads : " << no_of_threads << "\n";
 
   try //TODO hardcode more options for internal levels lol
   {
