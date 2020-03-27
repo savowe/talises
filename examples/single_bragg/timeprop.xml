@@ -1,0 +1,30 @@
+<SIMULATION>
+  <N_THREADS>4</N_THREADS>
+  <DIM>1</DIM>
+  <INTERNAL_DIM>2</INTERNAL_DIM>
+  <L>1e-6</L>
+  <T>1e-6</T>
+  <M>1.44466899e-25</M>
+  <FILENAME>0.000_1.bin</FILENAME>
+  <FILENAME_2>0.000_2.bin</FILENAME_2>
+  <CONSTANTS>
+    <k_1>10e6</k_1>
+    <k_2>-11e6</k_2>
+    <Delta>1e3</Delta>
+    <Amp>1e3</Amp>
+    <m>1.44466899e-25</m>
+    <hbar>1.054571817e-34</hbar>
+  </CONSTANTS>
+  <SEQUENCE>
+    <interact  dt="0.02" Nk="250" output_freq="packed" pn_freq="each"
+      V_11_real="0" V_11_imag="0" V_12_real="Amp*cos((k_1+k_2)*x+hbar^2/(2*m)*(k_1-k_2)^2*t)" V_12_imag="Amp*sin((k_1+k_2)*x+hbar^2/(2*m)*(k_1-k_2)^2*t)"
+						V_22_real="Delta" V_22_imag="0"
+>100</interact>
+    <freeprop  dt="2" Nk="250" output_freq="last" pn_freq="last"
+      V_11_real="0" V_11_imag="0"
+						V_22_real="Delta" V_22_imag="0"
+>5000</freeprop>
+
+  </SEQUENCE>
+</SIMULATION>
+
