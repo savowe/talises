@@ -1,47 +1,36 @@
 import talisestools as tt 
-import os,sys
 import numpy as np
+from matplotlib import pyplot as plt
 
-#input
-directory = os.path.abspath(os.getcwd())
-n_int_state = 1
-### File Search ###
-print("Searchin for files in "+directory)
-# define function for time sorting of file
-def filename_to_float(file):
-    if file[0:4] == "Seq_":
-        return float file[0:3]
-    return float(file[0:-6])
+data_psi1 = tt.readall(1)
+data_psi2 = tt.readall(2)
 
-# Read and append data
-file_list = []
-file_list = [f for f in os.listdir(directory) if f.endswith(str(n_int_state)+'.bin')]
-data = []
-for i in range(0, len(file_list)):
-    data.append(tt.readbin(file_list[i]))
+den_1 = np.abs(data_psi1["wavefunction"]**2)
+den_2 = np.abs(data_psi2["wavefunction"]**2)
+max_density = np.max(den_1)
 
-# concatenate psi and time
-psi = data[0]["wavefunction"]
-t = data[0]["t"]
-for i in range(1, len(file_list)):
-    t = np.concatenate((t, data[i]["t"]))
-    psi = np.concatenate((psi, data[1]["wavefunction"]), axis=data[0]["nDims"])
+t = data_psi1["t"]
+x = np.linspace(data_psi1["xMin"], data_psi1["xMax"], data_psi1["nDimX"])
+y = np.linspace(data_psi1["yMin"], data_psi1["yMax"], data_psi1["nDimY"])
 
-# sort after time
-sorted_inds = t.argsort()
-sorted_t = np.empty(shape=t.shape)
-sorted_psi = np.empty(shape=psi.shape,dtype=np.complex_)
-if data[0]["nDims"] == 1:
-    for i in range(0, len(t)):
-        sorted_psi[:,i] = psi[:,sorted_inds[i]]
-        sorted_t[i] = t[sorted_inds[i]]
+## Create animated gif
+import gif
+@gif.frame
+def plot(den1, den2, x, y, t, max_density):
+    fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    ax1.pcolormesh(x, y, den2)
+    ax2.pcolormesh(x, y, den1)
+    ax1.set_title(str(t))
+    ax1.grid()
+    ax2.grid()
+    plt.tight_layout()
+    plt.savefig("test.png")
 
-if data[0]["nDims"] == 2:
-    for i in range(0, len(t)):
-        sorted_psi[:,:,i] = psi[:,:,sorted_inds[i]]
-        sorted_t[i] = t[sorted_inds[i]]
 
-if data[0]["nDims"] == 3:
-    for i in range(0, len(t)):
-        sorted_psi[:,:,:,i] = psi[:,:,:,sorted_inds[i]]
-        sorted_t[i] = t[sorted_inds[i]]
+frames = []
+for i in range(0,len(t)):
+    frame = plot(den_1[:,:,i], den_2[:,:,i], x, y, t[i], max_density)
+    frames.append(frame)
+    print("Generated plot "+str(i)+"/"+str(len(t)-1))
+
+gif.save(frames, "eval.gif", duration=200)
