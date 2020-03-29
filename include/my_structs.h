@@ -52,8 +52,8 @@ struct generic_header
   double    dt;
   int       ks; // Koordinaten-System
   int       fs; // 1 -> fourier space, 0 -> real space
-  double    L;
-  double    T;
+  double    M;
+  double    T_scale;
   int       nFuture[99];
   double    dFuture[98];
 };

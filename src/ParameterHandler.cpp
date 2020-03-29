@@ -575,8 +575,8 @@ void ParameterHandler::Get_Header( generic_header &header, bool bcomplex )
     header.xMin = Get_xMin();
     header.dx = fabs(header.xMax-header.xMin)/double(header.nDimX);
     header.dkx  = 2*M_PI/fabs(header.xMax-header.xMin);
-    header.L = 1;
-    header.T = Get_t_scale();
+    header.M = Get_M();
+    header.T_scale = Get_t_scale();
     break;
   case 2:
     header.nDimX = Get_NX();
@@ -590,8 +590,8 @@ void ParameterHandler::Get_Header( generic_header &header, bool bcomplex )
     header.dy = fabs(header.yMax-header.yMin)/double(header.nDimY);
     header.dkx  = 2*M_PI/fabs(header.xMax-header.xMin);
     header.dky  = 2*M_PI/fabs(header.yMax-header.yMin);
-    header.L = 1;
-    header.T = Get_t_scale();
+    header.M = Get_M();
+    header.T_scale = Get_t_scale();
     break;
   case 3:
     header.nDimX = Get_NX();
@@ -609,8 +609,8 @@ void ParameterHandler::Get_Header( generic_header &header, bool bcomplex )
     header.dkx  = 2*M_PI/fabs(header.xMax-header.xMin);
     header.dky  = 2*M_PI/fabs(header.yMax-header.yMin);
     header.dkz  = 2*M_PI/fabs(header.zMax-header.zMin);
-    header.L = 1;
-    header.T = Get_t_scale();
+    header.M = Get_M();
+    header.T_scale = Get_t_scale();
     break;
   }
   header.dt   = 0.001;

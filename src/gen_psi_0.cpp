@@ -46,8 +46,8 @@ public:
     m_header.yMin = p.Get_yMin();
     m_header.zMax = p.Get_zMax();
     m_header.zMin = p.Get_zMin();
-    m_header.L = 1;
-    m_header.T = p.Get_T();
+    m_header.M = 1;
+    m_header.T_scale = p.Get_t_scale();
     m_header.dt = 0.001;
 
     switch (dim)

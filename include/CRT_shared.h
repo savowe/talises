@@ -62,7 +62,7 @@ public:
   };
   const double &Get_t_scale() const
   {
-    return m_header.T;
+    return m_header.T_scale;
   };
   const double &Get_dt() const
   {

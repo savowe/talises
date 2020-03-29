@@ -111,7 +111,7 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
   char s[100];
   //for ( int i=0; i<dim; i++)
   //  beta[i] = m_params->Get_VConstant("Beta",i);
-  this->m_header.T = m_params->Get_t_scale();
+  this->m_header.T_scale = m_params->Get_t_scale();
 }
 
 
@@ -189,6 +189,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
 
   if ( (this->position_dependent == true) and (this->nonlinear == false)) //Calculate V(r,t) at t for all r
   {
+    #pragma omp parallel for
     for ( int l=0; l<this->m_no_of_pts; l++ )
     {
         this->x = this->m_fields[0]->Get_x(l);
