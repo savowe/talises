@@ -111,7 +111,7 @@ void CRT_Base_IF<T,dim,no_int_states>::UpdateParams()
   char s[100];
   //for ( int i=0; i<dim; i++)
   //  beta[i] = m_params->Get_VConstant("Beta",i);
-  this->m_header.T = m_params->Get_T();
+  this->m_header.T = m_params->Get_t_scale();
 }
 
 
@@ -146,8 +146,8 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization_Wrapper ( void 
 template <class T, int dim, int no_int_states>
 void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
 {
-  const double dt = -m_header.dt*this->m_T;
-  this->t = this->Get_t()*this->m_T;
+  const double dt = -m_header.dt*this->Get_t_scale();
+  this->t = this->Get_t()*this->Get_t_scale();
   double re1, im1, tmp1, phi[no_int_states];
 
   int nNum = this->V_parser->GetNumResults();
@@ -164,11 +164,10 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
         for ( int i=0; i<no_int_states; i++ )
         {
           //psi.push_back(m_fields[i]->Getp2In());
-          this->psi_real_array[i] = Psi[i][l][0]/std::pow(this->m_L,dim/2);
-          this->psi_imag_array[i] = Psi[i][l][1]/std::pow(this->m_L,dim/2);
+          this->psi_real_array[i] = Psi[i][l][0];
+          this->psi_imag_array[i] = Psi[i][l][1];
         }
         this->x = this->m_fields[0]->Get_x(l);
-        for (int i=0; i<dim; i++){this->x[i] *= this->m_L;}
         double *V_ptr = this->V_parser->Eval(nNum);
         for ( int i=0; i<no_int_states; i++ )
         {
@@ -193,7 +192,6 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
     for ( int l=0; l<this->m_no_of_pts; l++ )
     {
         this->x = this->m_fields[0]->Get_x(l);
-        for (int i=0; i<dim; i++){this->x[i] *= this->m_L;}
         double *V_ptr = this->V_parser->Eval(nNum);
         for ( int i=0; i<no_int_states; i++ )
         {
@@ -246,7 +244,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Do_NL_Step()
 template <class T, int dim, int no_int_states>
 void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
 {
-  this->t = this->Get_t()*this->m_T;
+  this->t = this->Get_t()*this->Get_t_scale();
   int nNum = this->V_parser->GetNumResults();
   double *V_ptr = this->V_parser->Eval(nNum); // initializes nNum
   const long long int N_V_eval = this->m_no_of_pts*no_int_states*nNum ;
@@ -262,11 +260,10 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
       //vector<fftw_complex *> psi;
       for ( int i=0; i<no_int_states; i++ )
       {
-        this->psi_real_array[i] = Psi[i][l][0]/std::pow(this->m_L,dim/2);
-        this->psi_imag_array[i] = Psi[i][l][1]/std::pow(this->m_L,dim/2);
+        this->psi_real_array[i] = Psi[i][l][0];
+        this->psi_imag_array[i] = Psi[i][l][1];
       }
       this->x = this->m_fields[0]->Get_x(l);
-      for (int i=0; i<dim; i++){this->x[i] *= this->m_L;}
       V_ptr = this->V_parser->Eval(nNum);
       for (int j=0; j<nNum; j++)
       {
@@ -279,7 +276,6 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
     for ( int l=0; l<this->m_no_of_pts; l++ ) //TODO parallelizing this would be good
     {
       this->x = this->m_fields[0]->Get_x(l);
-      for (int i=0; i<dim; i++){this->x[i] *= this->m_L;}
       V_ptr = this->V_parser->Eval(nNum);
       for (int j=0; j<nNum; j++)
       {
@@ -301,7 +297,7 @@ void CRT_Base_IF<T,dim,no_int_states>::Numerical_Diagonalization()
   #pragma omp parallel
   {
 	  double re1, im1;
-    const double dt = -m_header.dt*this->m_T;
+    const double dt = -m_header.dt*this->Get_t_scale();
 
     //vector<fftw_complex *> Psi;
     //for ( int i=0; i<no_int_states; i++ )

@@ -3,12 +3,14 @@
   <FILENAME>0.000_1.bin</FILENAME>
   <PSI_REAL_1D>exp( -0.25*((x-x_0)/sigma_x)^2 )</PSI_REAL_1D>
   <PSI_IMAG_1D>0</PSI_IMAG_1D>
-  <L>1e-6</L>
-  <NX>256</NX>
-  <XMIN>-10</XMIN><XMAX>10</XMAX>
+  <ALGORITHM>
+    <NX>256</NX>
+    <XMIN>-10e-6</XMIN>
+    <XMAX>10e-6</XMAX>
+  </ALGORITHM>
   <CONSTANTS>
     <N>1</N>
-    <x_0>5</x_0>
-    <sigma_x>1</sigma_x>
+    <x_0>5e-6</x_0>
+    <sigma_x>1e-6</sigma_x>
   </CONSTANTS>
 </SIMULATION>

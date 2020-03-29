@@ -60,6 +60,10 @@ public:
   {
     return m_header.t;
   };
+  const double &Get_t_scale() const
+  {
+    return m_header.T;
+  };
   const double &Get_dt() const
   {
     return m_header.dt;

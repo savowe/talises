@@ -154,9 +154,9 @@ CRT_Base<T,dim,no_int_states>::CRT_Base( ParameterHandler *params )
   m_custom_fct=nullptr;
   m_potenial_initialized=false;
 
-  m_L = std::stod(m_params->Get_simulation("L"));
-  m_T = std::stod(m_params->Get_simulation("T"));
-  m_M = std::stod(m_params->Get_simulation("M"));
+  m_L = 1;
+  m_T = m_params->Get_t_scale();
+  m_M = m_params->Get_M();
   double hbar = 1.054571817e-34;
   
   //Read alpha from xml
@@ -593,7 +593,6 @@ double CRT_Base<T,dim,no_int_states>::Get_Particle_Number( const int comp )
   {
     retval += (Psi[l][0]*Psi[l][0] + Psi[l][1]*Psi[l][1]);
   }
-  //retval *= pow(m_L,dim);
   return m_ar*retval;
 }
 

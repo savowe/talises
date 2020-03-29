@@ -2,16 +2,15 @@
   <N_THREADS>4</N_THREADS>
   <DIM>1</DIM>
   <INTERNAL_DIM>2</INTERNAL_DIM>
-  <L>1e-6</L>
-  <T>1e-6</T>
-  <M>1.44466899e-25</M>
   <FILENAME>0.000_1.bin</FILENAME>
   <FILENAME_2>0.000_2.bin</FILENAME_2>
-  <FILENAME_3>0.000_2.bin</FILENAME_3>
+  <ALGORITHM>
+    <T_SCALE>1e-6</T_SCALE>
+    <M>1.44466899e-25</M>
+  </ALGORITHM>
   <CONSTANTS>
     <f_R>2500</f_R>
     <m>1.44466899e-25</m>
-    <g>9.81</g>
     <hbar>1.054571817e-34</hbar>
     <f_HO_1>1e2</f_HO_1>
     <f_HO_2>2e2</f_HO_2>

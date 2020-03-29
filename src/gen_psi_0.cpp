@@ -46,7 +46,7 @@ public:
     m_header.yMin = p.Get_yMin();
     m_header.zMax = p.Get_zMax();
     m_header.zMin = p.Get_zMin();
-    m_header.L = p.Get_L();
+    m_header.L = 1;
     m_header.T = p.Get_T();
     m_header.dt = 0.001;
 
@@ -102,7 +102,6 @@ public:
       filename = m_ph.Get_simulation("FILENAME");
       real_str = m_ph.Get_simulation("PSI_REAL_" + std::to_string(dim) + "D");
       imag_str = m_ph.Get_simulation("PSI_IMAG_" + std::to_string(dim) + "D");
-      m_L = std::stod(m_ph.Get_simulation("L"));
       n_of_particles = m_ph.Get_Constant("N");
     }
     catch (const std::string info )
@@ -180,7 +179,6 @@ public:
 
       if ( N > 0.0)
       {
-        //const double f=sqrt(n_of_particles/(N*pow(m_L,dim)));
         const double f=sqrt(n_of_particles/N);
 
         #pragma omp for

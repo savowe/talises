@@ -1,12 +1,15 @@
 <SIMULATION>
-  <DIM>1</DIM> 
+  <DIM>1</DIM>
   <FILENAME>0.000_1.bin</FILENAME>
-  <GUESS_1D>exp( -0.25*((x-x_0)/sigma_x)^2 )</GUESS_1D>
+  <PSI_REAL_1D>exp( -0.25*((x-x_0)/sigma_x)^2 )*cos(k*x)</PSI_REAL_1D>
+  <PSI_IMAG_1D>exp( -0.25*((x-x_0)/sigma_x)^2 )*sin(k*x)</PSI_IMAG_1D>
+  <L>1e-6</L>
+  <NX>256</NX>
+  <XMIN>-10</XMIN><XMAX>10</XMAX>
   <CONSTANTS>
     <N>1</N>
-    <x_0>0</x_0>
+    <k>2</k>
+    <x_0>-5</x_0>
     <sigma_x>1</sigma_x>
   </CONSTANTS>
-    <NX>256</NX>
-    <XMIN>-10</XMIN><XMAX>10</XMAX>
 </SIMULATION>

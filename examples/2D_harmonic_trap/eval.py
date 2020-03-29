@@ -18,13 +18,12 @@ import gif
 @gif.frame
 def plot(den1, den2, x, y, t, max_density):
     fig, (ax1, ax2) = plt.subplots(2, sharex=True)
-    ax1.pcolormesh(x, y, den2)
-    ax2.pcolormesh(x, y, den1)
-    ax1.set_title(str(t))
+    ax1.pcolormesh(x, y, den2, vmax = max_density)
+    ax2.pcolormesh(x, y, den1, vmax = max_density)
+    ax1.set_title(r"t = {:10.0f} $\mu$s".format(t))
     ax1.grid()
     ax2.grid()
     plt.tight_layout()
-    plt.savefig("test.png")
 
 
 frames = []

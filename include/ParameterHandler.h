@@ -82,6 +82,7 @@ public:
   bool Get_MomentumStates( std::vector<double>&, const int );
 
   double Get_t();
+  double Get_t_scale();
   double Get_dt();
   double Get_epsilon();
   double Get_stepsize();
@@ -93,6 +94,7 @@ public:
   double Get_zMax();
   double Get_L();
   double Get_T();
+  double Get_M();
 
   int Get_NX();
   int Get_NY();
