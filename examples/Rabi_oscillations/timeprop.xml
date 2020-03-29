@@ -1,0 +1,29 @@
+<SIMULATION>
+  <N_THREADS>4</N_THREADS>
+  <DIM>1</DIM>
+  <INTERNAL_DIM>2</INTERNAL_DIM>
+  <FILENAME>0.000_1.bin</FILENAME>
+  <FILENAME_2>0.000_2.bin</FILENAME_2>
+  <ALGORITHM>
+    <T_SCALE>1e-6</T_SCALE>
+    <M>1.44466899e-25</M>
+  </ALGORITHM>
+  <CONSTANTS>
+    <f_R>2500</f_R>
+  </CONSTANTS>
+  <SEQUENCE>
+    <interact  dt="0.02" Nk="250" output_freq="packed" pn_freq="each"
+      V_11_real="0" V_11_imag="0" V_12_real="2*pi*f_R/2" V_12_imag="0"
+						V_22_real="0" V_22_imag="0"
+>100</interact>
+  <freeprop dt="2" Nk="100" output_freq="packed" pn_freq="each"
+V_11_real="0" V_11_imag="0" 	
+V_22_real="0" V_22_imag="0"
+>10000</freeprop>
+    <interact dt="0.02" Nk="250" output_freq="packed" pn_freq="each"
+V_11_real="0" V_11_imag="0" 			V_12_real="2*pi*f_R/2" V_12_imag="0"
+						V_22_real="0" V_22_imag="0"
+>100</interact>-->
+  </SEQUENCE>
+</SIMULATION>
+

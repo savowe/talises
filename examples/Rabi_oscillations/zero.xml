@@ -1,7 +1,7 @@
 <SIMULATION>
   <DIM>1</DIM>
-  <FILENAME>0.000_1.bin</FILENAME>
-  <PSI_REAL_1D>exp( -0.25*((x-x_0)/sigma_x)^2 )</PSI_REAL_1D>
+  <FILENAME>0.000_2.bin</FILENAME>
+  <PSI_REAL_1D>0</PSI_REAL_1D>
   <PSI_IMAG_1D>0</PSI_IMAG_1D>
   <ALGORITHM>
     <NX>256</NX>
@@ -9,8 +9,6 @@
     <XMAX>10e-6</XMAX>
   </ALGORITHM>
   <CONSTANTS>
-    <N>1</N>
-    <x_0>0</x_0>
-    <sigma_x>1e-6</sigma_x>
+     <N>1</N>
   </CONSTANTS>
 </SIMULATION>
