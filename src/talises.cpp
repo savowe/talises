@@ -96,6 +96,11 @@ int main( int argc, char *argv[] ){
   {
     if ( dim == 1 )
     {
+		if (internal_dim == 1)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_1d,1,1> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
     	if (internal_dim == 2)
     	{
 		  RT_Solver::Raman_single<Fourier::cft_1d,1,2> rtsol( &params );
@@ -134,6 +139,11 @@ int main( int argc, char *argv[] ){
     }
     else if ( dim == 2 )
     {
+		if (internal_dim == 1)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_2d,2,1> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
     	if (internal_dim == 2)
     	{
 		  RT_Solver::Raman_single<Fourier::cft_2d,2,2> rtsol( &params );
@@ -172,6 +182,11 @@ int main( int argc, char *argv[] ){
     }
     else if ( dim == 3 )
     {
+		if (internal_dim == 1)
+    	{
+		  RT_Solver::Raman_single<Fourier::cft_3d,3,1> rtsol( &params );
+		  rtsol.run_sequence();
+    	}
     	if (internal_dim == 2)
     	{
 		  RT_Solver::Raman_single<Fourier::cft_3d,3,2> rtsol( &params );
