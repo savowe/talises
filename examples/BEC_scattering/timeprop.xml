@@ -1,0 +1,26 @@
+<SIMULATION>
+  <N_THREADS>4</N_THREADS>
+  <DIM>2</DIM>
+  <INTERNAL_DIM>2</INTERNAL_DIM>
+  <FILENAME>0.000_1.bin</FILENAME>
+  <FILENAME_2>0.000_2.bin</FILENAME_2>
+  <CONSTANTS>
+  <g_11>1e-14</g_11>
+  <g_12>5e-12</g_12>
+  <g_21>5e-12</g_21>
+  <g_22>1e-14</g_22>
+  </CONSTANTS>
+    <ALGORITHM>
+      <M>1.44466899e-25</M>
+      <T_SCALE>1e-6</T_SCALE>
+   </ALGORITHM>
+  <SEQUENCE>
+
+    <freeprop Nk="50" dt="2" output_freq="packed" pn_freq="none"
+V_11_real="g_11*(psi_1_real^2+psi_1_imag^2)+g_12*(psi_2_real^2+psi_2_imag^2)" V_11_imag="0" 
+V_22_real="g_21*(psi_1_real^2+psi_1_imag^2)+g_22*(psi_2_real^2+psi_2_imag^2)" V_22_imag="0"
+>6000</freeprop> 
+
+  </SEQUENCE>
+</SIMULATION>
+
