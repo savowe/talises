@@ -3,53 +3,55 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 ## Load binary data
-# Load first state
-psi_1_1 = tt.readbin("Seq_1_1.bin")
-psi_2_1 = tt.readbin("Seq_2_1.bin")
-psi_3_1 = tt.readbin("Seq_3_1.bin")
-# Load second state
-psi_1_2 = tt.readbin("Seq_1_2.bin")
-psi_2_2 = tt.readbin("Seq_2_2.bin")
-psi_3_2 = tt.readbin("Seq_3_2.bin")
 
-# concatenate seperated wavefunction and time arrays
-psi_1 = np.concatenate((psi_1_1["wavefunction"],psi_2_1["wavefunction"],psi_3_1["wavefunction"]), axis=1)
-psi_2 = np.concatenate((psi_1_2["wavefunction"],psi_2_2["wavefunction"],psi_3_2["wavefunction"]), axis=1)
-t = np.concatenate((psi_1_1["t"],psi_2_1["t"],psi_3_1["t"]))
+data_psi1 = tt.readall(1)
+data_psi2 = tt.readall(2)
 
-# Get additional information for plots
-xMin = psi_1_1["xMin"]
-xMax = psi_1_1["xMax"]
-nDimX = psi_1_1["nDimX"]
-
+# Get information for plots
+psi1 = data_psi1["wavefunction"]
+psi2 = data_psi2["wavefunction"]
+t = data_psi1["t"]
+xMin = data_psi1["xMin"]
+xMax = data_psi1["xMax"]
+nDimX = data_psi1["nDimX"]
 x = np.linspace(xMin, xMax, nDimX)
-# Calculate probabillity densities
-den_1 = np.abs(psi_1)**2
-den_2 = np.abs(psi_2)**2
-max_density = np.max(den_2)
+max_density = np.max(np.abs(psi2)**2)
 
 ## Create animated gif
 import gif
 @gif.frame
-def plot(den1, den2, x, t, max_density):
+def plot(psi1, psi2, x, t, max_density):
+    den1_real = np.abs(np.real(psi1))**2
+    den2_real = np.abs(np.real(psi2))**2
+    den1_imag = np.abs(np.imag(psi1))**2
+    den2_imag = np.abs(np.imag(psi2))**2
+    den1 = den1_real + den1_imag
+    den2 = den2_real + den2_imag
+    
     fig, (ax1, ax2) = plt.subplots(2, sharex=True)
-    ax1.plot(x, den2, label = "t="+"{:10.3f}".format(t)+r' $\mu$s')
+    ax1.set_title(r"t = {:10.0f} $\mu$s".format(t))
+    ax1.plot(x, den2_real, label = r"|real$(\Psi )|^2$", linestyle="--")
+    ax1.plot(x, den2_imag, label = r"|imag$(\Psi )|^2$", linestyle="--")
+    ax1.plot(x, den2, label = r"$|\Psi|^2$", linestyle="-")
     ax1.set_ylabel(r"$|\Psi|^2$ [m$^{-1}$] excited")
-    ax2.plot(x, den1)
+    ax2.plot(x, den1_real, label = r"|real$(\Psi )|^2$", linestyle="--")
+    ax2.plot(x, den1_imag, label = r"|imag$(\Psi )|^2$", linestyle="--")
+    ax2.plot(x, den1, label = r"$|\Psi|^2$", linestyle="-")
     ax2.set_ylabel(r"$|\Psi|^2$ [m$^{-1}$] ground")
     ax2.set_xlabel(r"position [m]")
     ax1.set_xlim(np.min(x), np.max(x))
     ax1.set_ylim(0, max_density)
     ax2.set_ylim(0, max_density)
+    ax1.legend()
+    ax2.legend()
     ax1.grid()
     ax2.grid()
-    ax1.legend()
     plt.tight_layout()
 
 frames = []
 for i in range(0,len(t)):
-    frame = plot(den_1[:,i], den_2[:,i], x, t[i], max_density)
+    frame = plot(psi1[:,i], psi2[:,i], x, t[i], max_density)
     frames.append(frame)
     print("Generated plot "+str(i)+"/"+str(len(t)-1))
 
-gif.save(frames, "eval.gif", duration=200)
+gif.save(frames, "eval.gif", duration=100)

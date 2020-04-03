@@ -4,7 +4,7 @@
   <PSI_REAL_1D>0</PSI_REAL_1D>
   <PSI_IMAG_1D>0</PSI_IMAG_1D>
   <ALGORITHM>
-    <NX>256</NX>
+    <NX>512</NX>
     <XMIN>-10e-6</XMIN>
     <XMAX>10e-6</XMAX>
   </ALGORITHM>

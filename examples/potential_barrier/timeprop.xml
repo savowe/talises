@@ -15,7 +15,7 @@
    </ALGORITHM>
   <SEQUENCE>
     <freeprop Nk="25" dt="2" output_freq="packed" pn_freq="none"
-    V_11_real="(1/2*(1-sign(-y+barrier_lower_ybound))*1/2*(1-sign(y-barrier_upper_ybound)) * rint(sin(kx_barrier*x)^2))*barrier_Amp " V_11_imag="0"
+    V_11_real="(1/2*(1+sign(y-barrier_lower_ybound))*1/2*(1+sign(-y+barrier_upper_ybound)) * rint(sin(kx_barrier*x)^2))*barrier_Amp " V_11_imag="0"
     >4000</freeprop> 
   </SEQUENCE>
 </SIMULATION>
