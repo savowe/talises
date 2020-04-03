@@ -1,0 +1,21 @@
+<SIMULATION>
+  <N_THREADS>4</N_THREADS>
+  <DIM>2</DIM>
+  <INTERNAL_DIM>1</INTERNAL_DIM>
+  <FILENAME>0.000_1.bin</FILENAME>
+  <CONSTANTS>
+    <barrier_upper_ybound>.1e-6</barrier_upper_ybound>
+    <barrier_lower_ybound>-.1e-6</barrier_lower_ybound>
+    <barrier_Amp>1e5</barrier_Amp>
+    <kx_barrier>2e6</kx_barrier>
+  </CONSTANTS>
+    <ALGORITHM>
+      <M>1.44466899e-25</M>
+      <T_SCALE>1e-6</T_SCALE>
+   </ALGORITHM>
+  <SEQUENCE>
+    <freeprop Nk="25" dt="2" output_freq="packed" pn_freq="none"
+    V_11_real="(1/2*(1-sign(-y+barrier_lower_ybound))*1/2*(1-sign(y-barrier_upper_ybound)) * rint(sin(kx_barrier*x)^2))*barrier_Amp " V_11_imag="0"
+    >4000</freeprop> 
+  </SEQUENCE>
+</SIMULATION>
