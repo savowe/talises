@@ -20,10 +20,13 @@
 V_11_real="0" V_11_imag="0" 			V_12_real="2*pi*f_R/2*cos(k*y)" V_12_imag="-2*pi*f_R/2*sin(k*y)"
 						V_22_real="-hbar*k^2/2/m" V_22_imag="0"
 >50</interact>
-    <freeprop Nk="200" dt="2" output_freq="packed" pn_freq="none"
+    <freeprop Nk="100" dt="2" output_freq="packed" pn_freq="none"
 V_11_real="m/hbar/2*(2*pi*f_HO)^2*(x^2+y^2)" V_11_imag="0" V_22_real="m/hbar/2*(2*pi*f_HO)^2*(x^2+y^2)" V_22_imag="0"
 >20000</freeprop> 
-
+      <interact Nk="25" dt="0.2" output_freq="packed" pn_freq="each"
+V_11_real="0" V_11_imag="0" 			V_12_real="2*pi*f_R/2*cos(k*y+pi)" V_12_imag="-2*pi*f_R/2*sin(k*y+pi)"
+						V_22_real="-hbar*k^2/2/m" V_22_imag="0"
+>50</interact>
   </SEQUENCE>
 </SIMULATION>
 

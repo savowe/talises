@@ -32,4 +32,4 @@ for i in range(0,len(t)):
     frames.append(frame)
     print("Generated plot "+str(i)+"/"+str(len(t)-1))
 
-gif.save(frames, "eval.gif", duration=200)
+gif.save(frames, "eval.gif", duration=100)
