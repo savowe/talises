@@ -1,4 +1,4 @@
-# CODENAME raman_LNSE (still in development)
+# TALISES
 
 raman_LNSE is an easy-to-use C++ implementation of the Split-Step Fourier Method for numeric calculation of a wave function's time-propagation under nonlinear Schrödinger equations.
 It's code is based on the [ATUS-2 package](https://github.com/GPNUM/atus2) programm developed at ZARM (Center of Applied Space Technology and Microgravity, University of Bremen).  
