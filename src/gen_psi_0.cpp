@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with TALISES.  If not, see <http://www.gnu.org/licenses/>.
 //
+// Copyright (C) 2020 Sascha Vowe
+// Copyright (C) 2017 Želimir Marojević, Ertan Göklü, Claus Lämmerzahl - Original implementation in ATUS2
 
 #include <cstdlib>
 #include <cstdio>
