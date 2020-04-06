@@ -10,7 +10,8 @@
     <M>1.44466899e-25</M>
   </ALGORITHM>
   <CONSTANTS>
-    <f_R>1e5</f_R>
+    <f_gi>1e5</f_gi>
+    <f_ei>1e5</f_ei>
     <f_Delta>1e6</f_Delta>
     <f_delta>2e3</f_delta>
     <t0>400e-6</t0>
@@ -18,10 +19,10 @@
   </CONSTANTS>
   <SEQUENCE>
     <interact Nk="1" dt="2" output_freq="packed" pn_freq="each"
-V_11_real="0" V_11_imag="0"  V_12_real="0" V_12_imag="0"   V_13_real="2*pi*f_R/2" V_13_imag="0"
-                             V_22_real="-2*pi*f_delta*(1/2+1/2*sign(t-t0))*((t-t0)/Dt)" V_22_imag="0"   V_23_real="2*pi*f_R/2" V_23_imag="0"
-                                                           V_33_real="-2*pi*f_Delta" V_33_imag="0"
->1000</interact> V_22_real="-2*pi*f_delta*((t-400e-6)/100e-6)"
+V_11_real="0" V_11_imag="0"  V_12_real="0" V_12_imag="0"   V_13_real="2*pi*f_gi/2" V_13_imag="0"
+                             V_22_real="2*pi*f_delta*(1/2+1/2*sign(t-t0))*((t-t0)/Dt)" V_22_imag="0"   V_23_real="2*pi*f_ei/2" V_23_imag="0"
+                                                           V_33_real="2*pi*f_Delta" V_33_imag="0"
+>1000</interact> 
   </SEQUENCE>
 </SIMULATION>
 
