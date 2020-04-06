@@ -10,7 +10,6 @@
 
 [Find more information and exemplary simulations in the documentation.](https://sascha.vowe.eu/talises-doc/)
 
--------------
 # Installing TALISES
 TALISES source files can be obtained on [GitHub](https://github.com/savowe/talises) either by downloading it there or by directly cloning it with
 ```
