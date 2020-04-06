@@ -1,6 +1,6 @@
 # TALISES
 
-raman_LNSE is an easy-to-use C++ implementation of the Split-Step Fourier Method for numeric calculation of a wave function's time-propagation under nonlinear Schrödinger equations.
+TALISES is an easy-to-use C++ implementation of the Split-Step Fourier Method for numeric calculation of a wave function's time-propagation under nonlinear Schrödinger equations.
 It's code is based on the [ATUS-2 package](https://github.com/GPNUM/atus2) programm developed at ZARM (Center of Applied Space Technology and Microgravity, University of Bremen).  
 [Read more in the TALISES documentation.](https://sascha.vowe.eu/talises-doc/)
 ### Features
