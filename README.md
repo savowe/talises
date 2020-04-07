@@ -22,8 +22,8 @@ TALISES uses the following libaries:
 - [GSL(CBLAS)](https://www.gnu.org/software/gsl/) for numeric diagonalization and matrix exponentiation
 - [muparser](https://beltoforion.de/article.php?a=muparser) for parsing of mathematical formulas
 
-You need this three libaries in order to use TALISES. If they are already installed on your machine, you only need the libary paths in your environment variables (e.g LD_LIBRARY_PATH) whilst you compile the program.  
-TALISES also comes with an installation script which is written in Common Lisp, that will download the required libaries, compile them and create [environment-module](https://modules.readthedocs.io/en/latest/) files. The use of environment-modules is advised. 
+You need this three libaries in order to use TALISES. If they are already installed on your machine, you only need the libary paths in your environment variables (e.g LD_LIBRARY_PATH) whilst you compile the program by running `cmake .`, `make clean` and `make`.  
+TALISES also comes with an installation script which is written in Common Lisp, that will download the required libaries, compile them and create [environment-module](http://modules.sourceforge.net/) files. The use of environment-modules is advised. 
 
 ### Prerequisites
 Necessities are compilers (gcc, g++), build automation tools (make, cmake) and the [Boost C++ Libraries](https://www.boost.org/doc/libs/).
@@ -33,10 +33,14 @@ sudo apt install build-essential cmake libboost-all-dev
 ```
 If you want to use the install script that comes with TALISES you need a Common Lisp compiler (we will use [SBCL](http://www.sbcl.org/)) and environment-modules. They can be installed with
 ```text
-sudo apt install sbcl curl environment-modules
+sudo apt install sbcl curl
 ```
-
+On newer versions of Ubuntu you can install environment-modules via
+```text
+sudo apt install tclsh environment-modules
+```
 After installation of environment-modules you may need to execute `add.modules` and reboot the system.
+If this does not work we recommend installing [it from source.](http://modules.sourceforge.net/)
 
 ### Running the installation script
 
@@ -84,6 +88,5 @@ fftw-3.3.8       gsl-2.5          muparser-2.2.6.1
 Then you can load those configuration files with `module load fftw-3.3.8 muparser-2.2.6.1 gsl-2.5` and check with `echo $LD_LIBRARY_PATH` whether the libaries' directories are in it.  
 Now you can install TALISES either via the installation script or by running `cmake .` followed by `make clean` and `make`.  
 If everything went right you will find the compiled binaries in the installation directory you set.
-
 
 [Find more information and exemplary simulations in the documentation.](https://sascha.vowe.eu/talises-doc/)
