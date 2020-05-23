@@ -202,7 +202,7 @@ Otherwise returns nil. Test is done via equal."
         ((uiop:ensure-directory-pathname full-name))
       (run (format nil "./configure --prefix=~a~a" *install-dir* full-name))
       (run "make clean")
-      (run (format nil "make CFLAGS=\"-march=native -std=gnu++11\" CPPFLAGS=\"-march=native -fopenmp -std=gnu++11\" LDFLAGS=\"-march=native -std=gnu++11\""))
+      (run (format nil "make CFLAGS=\"-march=native -fopenmp -std=gnu++11\" CPPFLAGS=\"-march=native -fopenmp -std=gnu++11\" LDFLAGS=\"-march=native -fopenmp -std=gnu++11\""))
       (run "make install")
       (export-variables full-name))))
 
