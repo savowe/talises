@@ -166,7 +166,7 @@ Otherwise returns nil. Test is done via equal."
     :url "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz")
 (define-software muparser
     :version "2.2.6.1"
-    :url "https://github.com/beltoforion/muparser/archive/v2.2.6.1.tar.gz")
+    :url "https://github.com/savowe/muparser/archive/v2.2.6.1.tar.gz")
 (define-software fftw
     :version "3.3.8"
     :url "http://fftw.org/fftw-3.3.8.tar.gz")
@@ -202,7 +202,7 @@ Otherwise returns nil. Test is done via equal."
         ((uiop:ensure-directory-pathname full-name))
       (run (format nil "./configure --prefix=~a~a" *install-dir* full-name))
       (run "make clean")
-      (run (format nil "make CFLAGS=\"-march=native -std=gnu++11\" CPPFLAGS=\"-march=native -std=gnu++11\" LDFLAGS=\"-march=native -std=gnu++11\""))
+      (run (format nil "make CFLAGS=\"-march=native -std=gnu++11\" CPPFLAGS=\"-march=native -fopenmp -std=gnu++11\" LDFLAGS=\"-march=native -std=gnu++11\""))
       (run "make install")
       (export-variables full-name))))
 
