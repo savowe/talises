@@ -8,7 +8,7 @@
 - simple implementation of Hamiltonians
 - speed of C++, the FFTW and GSL libaries and multithreading
 
-[Find more information and exemplary simulations in the documentation.](https://sascha.vowe.eu/talises-doc/)
+[Find more information and exemplary simulations in the documentation.](https://savowe.github.io/talises-doc/)
 
 # Installing TALISES
 TALISES source files can be obtained on [GitHub](https://github.com/savowe/talises) either by downloading it there or by directly cloning it with
@@ -89,4 +89,4 @@ Then you can load those configuration files with `module load fftw-3.3.8 muparse
 Now you can install TALISES either via the installation script or by running `cmake .` followed by `make clean` and `make`.  
 If everything went right you will find the compiled binaries in the installation directory you set.
 
-[Find more information and exemplary simulations in the documentation.](https://sascha.vowe.eu/talises-doc/)
+[Find more information and exemplary simulations in the documentation.](https://savowe.github.io/talises-doc/)
